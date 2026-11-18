@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#1e1f22">
+<meta name="robots" content="noindex, nofollow">
+<title>Life Desk</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<style>
+/* Life Desk's own colours (theme.py, the same as Tutor Desk's), dark and light */
+:root, :root[data-theme="dark"] {
+  --bg: #1e1f22; --surface: #2b2d31; --field: #313338; --border: #3f4147;
+  --fg: #e8e9eb; --muted: #9ba1a9; --accent: #4c8bf5; --amber: #e0a040; --now: #ef4444;
+  /* the status labels (theme.py "badges") */
+  --b-ns: #2d3445; --b-ns-fg: #b9c6dd; --b-due: #4b2226; --b-due-fg: #f4a3a3; --b-draft: #4a3518; --b-draft-fg: #f7c27a;
+  --b-sub: #1d3b2a; --b-sub-fg: #8fd6a5; --b-skip: #34363c; --b-skip-fg: #9ba1a9;
+}
+:root[data-theme="light"] {
+  --bg: #f5f5f4; --surface: #e9e9e7; --field: #ffffff; --border: #c9c9c6;
+  --fg: #1f2328; --muted: #6b7280; --accent: #2563eb; --amber: #b45309; --now: #ef4444;
+  --b-ns: #e3e8f2; --b-ns-fg: #3b4a66; --b-due: #fbdcdc; --b-due-fg: #9b1c1c; --b-draft: #fdebd3; --b-draft-fg: #8a4b08;
+  --b-sub: #dcf2e3; --b-sub-fg: #1d6b3a; --b-skip: #e7e7e5; --b-skip-fg: #6b7280;
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--fg); touch-action: pan-x pan-y; }  /* the page never zooms */
+body { font: 15px/1.35 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; min-height: 100vh;
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+button, input, select, textarea { font: inherit; color: var(--fg); }
+button { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
+button:active { background: var(--field); }
+button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button:disabled { opacity: .5; }
+.muted { color: var(--muted); }
+.hidden { display: none !important; }
+
+/* top bar, like Life Desk's */
+header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 8px; }
+header h1 { font-size: 20px; margin: 0; font-weight: 700; flex: 1; }
+.synced { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+.synced .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.synced.stale { color: var(--amber); } .synced.stale .dot { background: var(--amber); }
+.synced.busy .dot { background: var(--accent); }
+.icon-btn { padding: 5px 9px; font-size: 16px; line-height: 1; }
+main { padding: 4px 16px 32px; }
+
+.bar { display: flex; align-items: center; gap: 8px; }
+.seg { display: inline-flex; flex: 1; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.seg button { flex: 1; border: none; border-radius: 0; background: var(--surface); padding: 8px 10px; }
+.seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
+.bar .primary { white-space: nowrap; padding: 8px 16px; }
+.info { font-size: 13px; margin: 8px 0 0; }
+.info.warn { color: var(--amber); }
+
+/* the list */
+.list { margin-top: 10px; border-top: 1px solid var(--border); }
+.row { display: block; width: 100%; text-align: left; border: none; border-bottom: 1px solid var(--border);
+  border-radius: 0; background: none; padding: 10px 2px; }
+.row .top { display: flex; align-items: flex-start; gap: 8px; }
+.row .t { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.row .sub { font-size: 13px; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
+.row .wait { font-size: 12px; color: var(--amber); margin-top: 3px; }
+.row.ticked .t { color: var(--muted); }
+.note { text-align: center; color: var(--muted); padding: 32px 8px; }
+.badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 3px; white-space: nowrap; flex: none; }
+.s-overdue { background: var(--b-due); color: var(--b-due-fg); }
+.s-today { background: var(--b-draft); color: var(--b-draft-fg); }
+.s-soon, .s-later { background: var(--b-ns); color: var(--b-ns-fg); }
+.s-nodate, .s-removed { background: var(--b-skip); color: var(--b-skip-fg); }
+.s-done { background: var(--b-sub); color: var(--b-sub-fg); }
+
+/* sheets (details, add / edit) */
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10; display: flex; align-items: flex-end; }
+.sheet { background: var(--surface); border-top: 1px solid var(--border); width: 100%; border-radius: 12px 12px 0 0;
+  max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
+  padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
+.sheet h2 { font-size: 18px; margin: 8px 0 4px; overflow-wrap: anywhere; }
+.sheet h3 { font-size: 14px; margin: 16px 0 4px; }
+.sheet .body { white-space: pre-wrap; font-size: 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px; overflow-wrap: anywhere; }
+.sheet .btns { display: flex; gap: 8px; margin-top: 16px; }
+.sheet .btns button { flex: 1; padding: 11px 8px; }
+.sheet .danger { color: var(--b-due-fg); }
+.hist div { font-size: 13px; color: var(--muted); margin: 2px 0; }
+label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
+.sheet input, .sheet select, .sheet textarea { width: 100%; background: var(--field); border: 1px solid var(--border);
+  border-radius: 6px; padding: 9px 10px; }
+.sheet textarea { min-height: 76px; resize: vertical; }
+.sheet input:focus, .sheet select:focus, .sheet textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.chips button { font-size: 13px; padding: 5px 11px; border-radius: 14px; }
+.read { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.err { color: var(--now); font-size: 13px; min-height: 1.2em; margin-top: 8px; }
+
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 20;
+  background: var(--field); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+
+/* lock screen */
+.lock { max-width: 380px; width: calc(100% - 32px); margin: 12vh auto 0; padding: 24px 20px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 10px; text-align: center; }
+.lock img { width: 64px; height: 64px; border-radius: 14px; }
+.lock h1 { font-size: 20px; margin: 8px 0 4px; }
+.lock input { width: 100%; margin: 14px 0 10px; padding: 10px; font: 600 17px/1 ui-monospace, Consolas, monospace;
+  letter-spacing: 1px; text-align: center; background: var(--field); color: var(--fg); border: 1px solid var(--border);
+  border-radius: 6px; text-transform: uppercase; }
+.lock input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.lock .err { min-height: 1.3em; }
+.lock button { width: 100%; padding: 10px; }
+</style>
+</head>
+<body>
+<div id="lock" class="lock hidden">
+  <img src="icon-192.png" alt="">
+  <h1>Life Desk</h1>
+  <div class="muted" id="lockNote">Enter your phone code. It's in Life Desk on your PC: Settings (the cog) → Phone app → Show code.</div>
+  <form id="lockForm">
+    <input id="code" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX">
+    <div class="err" id="lockErr"></div>
+    <button class="primary" id="unlockBtn">Unlock</button>
+  </form>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <h1>Life Desk</h1>
+    <div class="synced" id="synced"><span class="dot"></span><span id="syncedText"></span></div>
+    <button class="icon-btn" id="reload" title="Check for a newer copy" aria-label="Check for a newer copy">↻</button>
+  </header>
+  <main>
+    <div class="bar">
+      <div class="seg"><button id="vTodo">To do</button><button id="vDone">Done</button></div>
+      <button class="primary" id="addBtn">+ Add</button>
+    </div>
+    <div class="info muted hidden" id="pending"></div>
+    <div class="list" id="list"></div>
+  </main>
+</div>
+<div id="sheet" class="sheet-bg hidden"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script>
+"use strict";
+// The same choices as Life Desk's Add to do window (todo_core.py)
+const REPEATS = [["none", "Doesn't repeat"], ["week", "Every week"], ["month", "Every month"], ["year", "Every year"]];
+const WARNINGS = [[0, "On the day"], [1, "1 day before"], [3, "3 days before"], [7, "1 week before"],
+  [14, "2 weeks before"], [30, "1 month before"]];
+const DEFAULT_WARN = 3;
+const WD = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+const WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const MON_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
+  "November", "December"];
+const CHECK_EVERY = 30000;  // while a change waits for the PC, look for a newer copy this often
+const $ = (id) => document.getElementById(id);
+const store = {  // localStorage can be unavailable; the page still works without it
+  get(k) { try { return localStorage.getItem("lifedesk-" + k); } catch (e) { return null; } },
+  set(k, v) { try { localStorage.setItem("lifedesk-" + k, v); } catch (e) {} },
+};
+let snap = null, key = null, keySalt = null, locked = null, queue = [], view = store.get("view") || "todo";
+let sendError = "", busy = false;
+
+// ---- dates (all local, as text YYYY-MM-DD like Life Desk)
+function iso(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
+function parseIso(s) { const [y, m, d] = s.slice(0, 10).split("-").map(Number); return new Date(y, m - 1, d); }
+function todayDate() { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate()); }
+function addDays(d, n) { const x = new Date(d); x.setDate(x.getDate() + n); return x; }
+function daysBetween(a, b) { return Math.round((b - a) / 86400000); }
+function nowIso() { const n = new Date(); return `${iso(n)}T${[n.getHours(), n.getMinutes(), n.getSeconds()].map((x) => String(x).padStart(2, "0")).join(":")}`; }
+function niceDate(d, today = todayDate()) { return `${WD[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}` + (d.getFullYear() === today.getFullYear() ? "" : ` ${d.getFullYear()}`); }
+function longDate(d) { return `${WD_LONG[d.getDay()]} ${d.getDate()} ${MON_LONG[d.getMonth()]} ${d.getFullYear()}`; }
+function ago(s) {
+  if (!s) return "never";
+  const m = Math.floor((Date.now() - new Date(s)) / 60000);
+  return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 2880 ? `${Math.floor(m / 60)} h ago` : `${Math.floor(m / 1440)} days ago`;
+}
+function esc(s) { return String(s ?? "").replace(/[&<>"]/g, (c) => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c])); }
+function addMonths(d, n, day) {  // keeps the original day where the month has it (31 Jan -> 28 Feb -> 31 Mar)
+  const t = d.getMonth() + n, y = d.getFullYear() + Math.floor(t / 12), m = ((t % 12) + 12) % 12;
+  const last = new Date(y, m + 1, 0).getDate();
+  return new Date(y, m, Math.min(day || d.getDate(), last));
+}
+function nextDate(item, d) {
+  if (item.repeat === "week") return addDays(d, 7);
+  if (item.repeat === "month") return addMonths(d, 1, item.day);
+  if (item.repeat === "year") return addMonths(d, 12, item.day);
+  return d;
+}
+
+// ---- an item's state, worked out here so the colours are right on any day (todo_core.state)
+function state(t, today = todayDate()) {
+  if (t.removed) return "removed";
+  if (t.done) return "done";
+  if (!t.due) return "nodate";
+  const days = daysBetween(today, parseIso(t.due));
+  if (days < 0) return "overdue";
+  if (days === 0) return "today";
+  return days <= (t.warn ?? DEFAULT_WARN) ? "soon" : "later";
+}
+function badgeText(t, today = todayDate()) {
+  const s = state(t, today);
+  if (s === "overdue") return "Overdue";
+  if (s === "today") return "Today";
+  if (s === "soon" || s === "later") {
+    const days = daysBetween(today, parseIso(t.due));
+    return days === 1 ? "Tomorrow" : days <= 31 ? `In ${days} days` : niceDate(parseIso(t.due), today);
+  }
+  return {nodate: "No date", done: "Done", removed: "Removed"}[s];
+}
+function detailsLine(t, today = todayDate()) {
+  const bits = [];
+  if (t.due) {
+    const d = parseIso(t.due), days = daysBetween(today, d);
+    bits.push(`due ${niceDate(d, today)}` + (days < 0 ? ` (${-days} day${days !== -1 ? "s" : ""} ago)` : ""));
+  }
+  if ((t.repeat || "none") !== "none") bits.push(Object.fromEntries(REPEATS)[t.repeat].toLowerCase());
+  const w = t.warn ?? DEFAULT_WARN;
+  if (t.due && w) bits.push(`warns ${Object.fromEntries(WARNINGS)[w] || w + " days before"}`);
+  if (t.notes) bits.push(t.notes.split("\n")[0].slice(0, 80));
+  return bits.join("  ·  ") || "no due date";
+}
+
+// ---- storage on the phone (IndexedDB "life-desk"): the unlocked key (not the code), the last locked copy, and
+// changes not yet in Life Desk
+function db() {
+  return new Promise((ok, bad) => {
+    const r = indexedDB.open("life-desk", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("kv");
+    r.onsuccess = () => ok(r.result); r.onerror = () => bad(r.error);
+  });
+}
+async function kvGet(k) {
+  try { const d = await db(); return await new Promise((ok) => { const q = d.transaction("kv").objectStore("kv").get(k); q.onsuccess = () => ok(q.result); q.onerror = () => ok(undefined); }); }
+  catch (e) { return undefined; }
+}
+async function kvPut(k, v) {
+  try { const d = await db(); await new Promise((ok) => { const t = d.transaction("kv", "readwrite"); t.objectStore("kv").put(v, k); t.oncomplete = ok; t.onerror = ok; }); } catch (e) {}
+}
+const saveQueue = () => kvPut("queue", queue);
+
+// ---- locking: AES-256-GCM with a key made from the phone code (PBKDF2-SHA256), the same as phone_sync.py
+const b64 = (s) => Uint8Array.from(atob(s), (c) => c.charCodeAt(0));
+const tob64 = (u8) => { let s = ""; u8.forEach((b) => { s += String.fromCharCode(b); }); return btoa(s); };
+async function makeKey(code, l) {
+  const raw = new TextEncoder().encode(code.toUpperCase().replace(/[^A-Z0-9]/g, ""));
+  const base = await crypto.subtle.importKey("raw", raw, "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name: "PBKDF2", hash: "SHA-256", salt: b64(l.salt), iterations: l.iter},
+    base, {name: "AES-GCM", length: 256}, false, ["encrypt", "decrypt"]);
+}
+async function unlock(k, l) {
+  const plain = await crypto.subtle.decrypt({name: "AES-GCM", iv: b64(l.iv)}, k, b64(l.data));
+  return JSON.parse(new TextDecoder().decode(plain));
+}
+async function lockUp(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const data = new Uint8Array(await crypto.subtle.encrypt({name: "AES-GCM", iv}, key, new TextEncoder().encode(JSON.stringify(obj))));
+  return {v: 1, iter: locked.iter, salt: keySalt, iv: tob64(iv), data: tob64(data)};
+}
+
+// ---- getting the latest copy: from the page's own site (works offline from the last one), and straight from
+// GitHub when the phone's token is known (newer, as the site can take a minute or two to catch up)
+async function fetchSite() {
+  const r = await fetch(`snapshot.json?t=${Date.now()}`, {cache: "no-store"});
+  if (!r.ok) throw new Error(r.status === 503 ? "offline" : `HTTP ${r.status}`);
+  return r.json();
+}
+async function fetchDirect() {
+  if (!snap || !snap.phone_token || !snap.page_repo) return null;
+  const r = await fetch(`${snap.api}/repos/${snap.page_repo}/contents/snapshot.json?t=${Date.now()}`,
+    {cache: "no-store", headers: {Authorization: `Bearer ${snap.phone_token}`, Accept: "application/vnd.github.raw"}});
+  return r.ok ? r.json() : null;
+}
+
+async function start() {
+  queue = (await kvGet("queue")) || [];
+  const saved = await kvGet("key"), cached = await kvGet("snapshot");
+  if (saved && cached && saved.salt === cached.salt) {
+    try { key = saved.key; keySalt = saved.salt; locked = cached; show(await unlock(key, cached)); }
+    catch (e) { key = null; }
+  }
+  refresh();
+}
+
+async function refresh() {
+  if (busy) return;
+  busy = true; $("synced").classList.add("busy");
+  try {
+    const copies = [];
+    try { copies.push(await fetchSite()); } catch (e) {}
+    try { const d = await fetchDirect(); if (d) copies.push(d); } catch (e) {}
+    if (!key) {
+      locked = copies[0] || locked || await kvGet("snapshot");
+      return locked ? showLock("") : showLock("Couldn't download your list - check you have signal and try again.");
+    }
+    let best = null, bestLocked = null;
+    for (const l of copies) {
+      if (l.salt !== keySalt) {  // Life Desk has a new phone code
+        key = null; locked = l;
+        return showLock("Life Desk has a new phone code. Enter the new one (Settings → Phone app → Show code). Anything you changed here is kept.");
+      }
+      try { const d = await unlock(key, l); if (!best || d.made > best.made) { best = d; bestLocked = l; } } catch (e) {}
+    }
+    if (best && (!snap || best.made >= snap.made)) {
+      locked = bestLocked; await kvPut("snapshot", bestLocked);
+      show(best);
+    }
+    await sendQueue();
+  } finally {
+    busy = false; $("synced").classList.remove("busy");
+    if (snap) { render(); }
+  }
+}
+
+function showLock(msg) {
+  $("app").classList.add("hidden"); $("lock").classList.remove("hidden");
+  $("lockErr").textContent = msg;
+}
+$("lockForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (!locked) return refresh();
+  $("unlockBtn").disabled = true; $("lockErr").textContent = "Unlocking...";
+  try {
+    const k = await makeKey($("code").value, locked);
+    const data = await unlock(k, locked);
+    key = k; keySalt = locked.salt;
+    await kvPut("key", {salt: locked.salt, key: k});
+    await kvPut("snapshot", locked);
+    $("code").value = ""; $("lockErr").textContent = "";
+    show(data);
+    refresh();
+  } catch (err) { $("lockErr").textContent = "That code didn't unlock it - check it in Life Desk and try again."; }
+  $("unlockBtn").disabled = false;
+});
+
+// ---- sending changes: each one is locked here and put in the private data repository as its own file
+async function sendQueue() {
+  if (!snap || !key) return;
+  const waiting = queue.filter((c) => !c.sent);
+  if (!waiting.length) { sendError = ""; return; }
+  if (!snap.phone_token || !snap.data_repo) { sendError = "notoken"; return; }
+  for (const ch of waiting) {
+    const {sent, ...body} = ch;
+    let r;
+    try {
+      const file = await lockUp(body);
+      r = await fetch(`${snap.api}/repos/${snap.data_repo}/contents/changes/${ch.id}.json`, {
+        method: "PUT", cache: "no-store",
+        headers: {Authorization: `Bearer ${snap.phone_token}`, Accept: "application/vnd.github+json"},
+        body: JSON.stringify({message: "Change from the phone", content: btoa(JSON.stringify(file))})});
+    } catch (e) { sendError = "offline"; return; }
+    if (r.ok || r.status === 422) {  // 422: that file is already there, so it was sent before
+      ch.sent = true; await saveQueue();
+    } else if (r.status === 409) {  // GitHub was busy with another change: try again shortly
+      sendError = "retry"; setTimeout(() => sendQueue().then(render), 3000); return;
+    } else {
+      sendError = r.status === 401 ? "expired" : `GitHub said ${r.status}`; return;
+    }
+  }
+  sendError = "";
+}
+async function queueChange(op, item, extra = {}) {
+  const seq = Number(store.get("seq") || 0) + 1; store.set("seq", seq);
+  const rand = tob64(crypto.getRandomValues(new Uint8Array(6))).replace(/[+/=]/g, "x");
+  const at = nowIso();
+  queue.push({id: `${at.replace(/[-:]/g, "")}-${rand}`, at, seq, op, item, ...extra, sent: false});
+  await saveQueue();
+  render();
+  await sendQueue();
+  render();
+}
+const newTempId = () => "p" + tob64(crypto.getRandomValues(new Uint8Array(6))).replace(/[+/=]/g, "x");
+
+// ---- what to show: Life Desk's copy, with this phone's changes not yet in it laid on top
+function current() {
+  const applied = new Set(snap.applied || []);
+  const items = snap.items.map((t) => ({...t}));
+  const done = snap.done.map((h) => ({...h}));
+  const find = (id) => items.find((t) => t.id === id || t.phone_id === id);
+  const today = todayDate();
+  for (const ch of queue) {
+    if (applied.has(ch.id)) continue;
+    const mark = ch.sent ? "sent" : "unsent";
+    if (ch.op === "add") {
+      items.push({id: ch.item, phone_id: ch.item, ...ch.fields, created: ch.at, day: ch.fields.due ? parseIso(ch.fields.due).getDate() : null, waiting: mark});
+      continue;
+    }
+    const t = find(ch.item);
+    if (!t) continue;
+    if (ch.op === "edit") Object.assign(t, ch.fields, {day: ch.fields.due ? parseIso(ch.fields.due).getDate() : null, changed: ch.at, waiting: mark});
+    else if (ch.op === "remove") t.removed = ch.at;
+    else if (ch.op === "done") {
+      done.unshift({id: t.id, title: t.title, at: ch.at, due: t.due, note: ch.note || "", repeat: t.repeat, waiting: mark});
+      if ((t.repeat || "none") !== "none" && t.due) {  // moves on to its next date, as Life Desk will
+        let nxt = nextDate(t, parseIso(t.due));
+        while (nxt <= today) nxt = nextDate(t, nxt);
+        t.due = iso(nxt); t.waiting = mark;
+      } else t.done = ch.at;
+    }
+  }
+  const todo = items.filter((t) => !t.done && !t.removed)
+    .sort((a, b) => (!a.due - !b.due) || (a.due || "").localeCompare(b.due || "") || a.title.toLowerCase().localeCompare(b.title.toLowerCase()));
+  done.sort((a, b) => b.at.localeCompare(a.at));
+  return {todo, done, find};
+}
+
+// ---- showing it
+function show(data) {
+  snap = data;
+  snap.api = snap.api || "https://api.github.com";
+  document.documentElement.dataset.theme = data.theme === "light" ? "light" : "dark";
+  store.set("theme", document.documentElement.dataset.theme);
+  document.querySelector('meta[name="theme-color"]').content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim();
+  $("lock").classList.add("hidden"); $("app").classList.remove("hidden");
+  // changes Life Desk has dealt with: dropped here, and any it couldn't use are explained
+  const applied = new Set(snap.applied || []);
+  const results = Object.fromEntries((snap.results || []).map((r) => [r.id, r]));
+  const gone = queue.filter((c) => applied.has(c.id));
+  if (gone.length) {
+    queue = queue.filter((c) => !applied.has(c.id)); saveQueue();
+    const skipped = gone.map((c) => results[c.id]).filter((r) => r && r.result !== "ok");
+    if (skipped.length) toast("Not used by Life Desk: " + skipped.map((r) => r.message).join(" "), 9000);
+  }
+  render();
+}
+
+function render() {
+  if (!snap) return;
+  const age = (Date.now() - new Date(snap.made)) / 3600000;
+  $("synced").classList.toggle("stale", age > 48);
+  $("syncedText").textContent = age > 48 ? `PC last seen ${ago(snap.made)}` : `updated ${ago(snap.made)}`;
+  const {todo, done} = current();
+  $("vTodo").textContent = `To do (${todo.length})`;
+  $("vTodo").classList.toggle("on", view === "todo"); $("vDone").classList.toggle("on", view === "done");
+  // changes waiting
+  const unsent = queue.filter((c) => !c.sent).length, sent = queue.filter((c) => c.sent).length;
+  const p = $("pending"); let text = "", warn = false;
+  if (unsent) {
+    const n = `${unsent} change${unsent > 1 ? "s" : ""} not sent yet`;
+    text = sendError === "offline" ? `${n} - no signal. They're kept here and sent when there is.`
+      : sendError === "expired" ? `${n}: GitHub didn't accept the phone's token - it may have expired. Make a new one in Life Desk (Settings → Phone app).`
+      : sendError === "notoken" ? `${n}: the phone's token isn't set up yet - add it in Life Desk (Settings → Phone app).`
+      : sendError && sendError !== "retry" ? `${n} (${sendError}). They're kept here - press ↻ to try again.`
+      : `Sending ${unsent} change${unsent > 1 ? "s" : ""}...`;
+    warn = !!sendError && sendError !== "retry";
+  } else if (sent) {
+    text = `${sent} change${sent > 1 ? "s" : ""} waiting for Life Desk on your PC (it checks every minute while it's open).`;
+  }
+  p.textContent = text; p.classList.toggle("hidden", !text); p.classList.toggle("warn", warn);
+  const list = $("list"), today = todayDate();
+  if (view === "todo") {
+    list.innerHTML = todo.length ? todo.map((t) => `
+      <button class="row" data-id="${esc(t.id)}">
+        <div class="top"><span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
+          <span class="t">${esc(t.title)}${(t.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
+        <div class="sub">${esc(detailsLine(t, today))}</div>
+        ${t.waiting ? `<div class="wait">${t.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
+      </button>`).join("") : `<div class="note">Nothing to do. Press + Add to add something.</div>`;
+  } else {
+    list.innerHTML = done.length ? done.map((h) => `
+      <button class="row ticked" data-done="${esc(h.id)}">
+        <div class="top"><span class="badge s-done">Done</span><span class="t">${esc(h.title)}${(h.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
+        <div class="sub">${esc(niceDate(parseIso(h.at), today))}${h.note ? "  ·  " + esc(h.note) : ""}</div>
+        ${h.waiting ? `<div class="wait">${h.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
+      </button>`).join("") + `<div class="note">The last ${snap.done.length} things you ticked off. To put one back on the list, use Life Desk on your PC.</div>`
+      : `<div class="note">Nothing ticked off yet.</div>`;
+  }
+}
+
+$("list").addEventListener("click", (e) => {
+  const row = e.target.closest(".row");
+  if (row && row.dataset.id) details(row.dataset.id);
+});
+$("vTodo").onclick = () => { view = "todo"; store.set("view", view); render(); };
+$("vDone").onclick = () => { view = "done"; store.set("view", view); render(); };
+$("addBtn").onclick = () => editor(null);
+$("reload").onclick = () => refresh();
+
+// ---- sheets
+function openSheet(html) {
+  const s = $("sheet");
+  s.innerHTML = `<div class="sheet">${html}</div>`;
+  s.classList.remove("hidden");
+  return s.firstElementChild;
+}
+function closeSheet() { $("sheet").classList.add("hidden"); $("sheet").innerHTML = ""; }
+$("sheet").addEventListener("click", (e) => { if (e.target === $("sheet")) closeSheet(); });
+function toast(text, ms = 4000) {
+  const t = $("toast"); t.textContent = text; t.classList.remove("hidden");
+  clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.add("hidden"), ms);
+}
+
+function details(id) {
+  const {todo} = current();
+  const t = todo.find((x) => x.id === id);
+  if (!t) return;
+  const today = todayDate(), repeating = (t.repeat || "none") !== "none";
+  const before = snap.done.filter((h) => h.id === t.id).slice(0, 6);
+  const el = openSheet(`
+    <span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
+    <h2>${esc(t.title)}${repeating ? " ↻" : ""}</h2>
+    <div class="muted">${esc(detailsLine(t, today))}</div>
+    ${t.waiting ? `<div class="row"><div class="wait">${t.waiting === "sent" ? "Your change is waiting for Life Desk on your PC." : "Your change isn't sent yet."}</div></div>` : ""}
+    ${t.notes ? `<h3>Notes</h3><div class="body">${esc(t.notes)}</div>` : ""}
+    ${before.length ? `<h3>Done before</h3><div class="hist">${before.map((h) => `<div>${esc(niceDate(parseIso(h.at), today))}${h.note ? "  ·  " + esc(h.note) : ""}</div>`).join("")}</div>` : ""}
+    ${repeating ? `<label class="f" for="note">Note when ticking off (optional)</label><input id="note" placeholder="e.g. Paid £205, or who did it" autocomplete="off">` : ""}
+    <div class="btns"><button class="primary" id="sDone">✓ Done</button><button id="sEdit">Edit</button><button id="sRemove" class="danger">Remove</button></div>`);
+  el.querySelector("#sDone").onclick = async () => {
+    const note = repeating ? el.querySelector("#note").value.trim() : "";
+    closeSheet();
+    await queueChange("done", t.phone_id || t.id, {note, due: t.due});
+    toast(repeating ? `Done: ${t.title}. It moves on to its next date.` : `Done: ${t.title}.`);
+  };
+  el.querySelector("#sEdit").onclick = () => editor(t);
+  el.querySelector("#sRemove").onclick = () => {
+    const c = openSheet(`<h2>Remove "${esc(t.title)}"?</h2>
+      <p class="muted">It's kept in Life Desk's Removed view on your PC, where you can restore it.</p>
+      <div class="btns"><button class="primary" id="cYes">Remove</button><button id="cNo">Cancel</button></div>`);
+    c.querySelector("#cNo").onclick = closeSheet;
+    c.querySelector("#cYes").onclick = async () => {
+      closeSheet();
+      await queueChange("remove", t.phone_id || t.id);
+      toast(`Removed: ${t.title}.`);
+    };
+  };
+}
+
+function editor(t) {
+  const el = openSheet(`
+    <h2>${t ? "Edit to do" : "Add to do"}</h2>
+    <label class="f" for="eTitle">What needs doing</label>
+    <input id="eTitle" autocomplete="off" value="${esc(t ? t.title : "")}">
+    <label class="f" for="eDue">Due date</label>
+    <input id="eDue" type="date" value="${esc(t && t.due ? t.due : "")}">
+    <div class="chips"><button data-d="0">Today</button><button data-d="1">Tomorrow</button><button data-d="7">Next week</button><button data-d="">No date</button></div>
+    <div class="read" id="eRead"></div>
+    <label class="f" for="eRepeat">Repeats</label>
+    <select id="eRepeat">${REPEATS.map(([k, l]) => `<option value="${k}"${(t ? t.repeat || "none" : "none") === k ? " selected" : ""}>${l}</option>`).join("")}</select>
+    <label class="f" for="eWarn">Warn me</label>
+    <select id="eWarn">${WARNINGS.map(([k, l]) => `<option value="${k}"${(t ? t.warn ?? DEFAULT_WARN : DEFAULT_WARN) === k ? " selected" : ""}>${l}</option>`).join("")}</select>
+    <label class="f" for="eNotes">Notes</label>
+    <textarea id="eNotes">${esc(t ? t.notes || "" : "")}</textarea>
+    <div class="err" id="eErr"></div>
+    <div class="btns"><button class="primary" id="eSave">${t ? "Save" : "Add"}</button><button id="eCancel">Cancel</button></div>`);
+  const due = el.querySelector("#eDue");
+  const showRead = () => { el.querySelector("#eRead").textContent = due.value ? longDate(parseIso(due.value)) : "No due date"; };
+  showRead();
+  due.addEventListener("input", showRead); due.addEventListener("change", showRead);
+  el.querySelectorAll(".chips button").forEach((b) => b.onclick = () => {
+    due.value = b.dataset.d === "" ? "" : iso(addDays(todayDate(), Number(b.dataset.d))); showRead();
+  });
+  el.querySelector("#eCancel").onclick = closeSheet;
+  el.querySelector("#eSave").onclick = async () => {
+    const title = el.querySelector("#eTitle").value.trim(), repeat = el.querySelector("#eRepeat").value;
+    const err = el.querySelector("#eErr");
+    if (!title) { err.textContent = "Type what needs doing first."; return; }
+    if (repeat !== "none" && !due.value) { err.textContent = "A repeating item needs a due date, so Life Desk knows when it's next due."; return; }
+    const fields = {title, due: due.value || null, repeat, warn: Number(el.querySelector("#eWarn").value),
+      notes: el.querySelector("#eNotes").value.trim()};
+    closeSheet();
+    if (t) { await queueChange("edit", t.phone_id || t.id, {fields}); toast(`Saved changes to: ${title}.`); }
+    else {
+      await queueChange("add", newTempId(), {fields});
+      toast(`Added: ${title}` + (fields.due ? `, due ${niceDate(parseIso(fields.due))}.` : "."));
+    }
+  };
+  if (!t) setTimeout(() => el.querySelector("#eTitle").focus(), 50);
+}
+
+// ---- keeping up to date
+document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
+addEventListener("online", () => refresh());
+setInterval(() => { if (document.visibilityState === "visible" && snap && queue.length) refresh(); }, CHECK_EVERY);
+setInterval(() => { if (snap) render(); }, 60000);  // "updated n min ago", and Today / Overdue after midnight
+
+document.documentElement.dataset.theme = store.get("theme") || "dark";
+if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
+start();
+</script>
+</body>
+</html>
