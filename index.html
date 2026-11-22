@@ -104,6 +104,33 @@ nav.tabs .count { position: absolute; top: 2px; left: calc(50% + 8px); backgroun
 .s-done { background: var(--b-sub); color: var(--b-sub-fg); }
 .s-list { background: #3a2516; color: #ff9466; }
 
+/* exercise and food (22 Nov 2026) */
+.k-tennis { background: #1d3b2a; color: #8fd6a5; } .k-crossfit { background: #1f2a35; color: #8ec5ff; }
+.k-gym { background: #3a2516; color: #ff9466; } .k-other { background: var(--b-ns); color: var(--b-ns-fg); }
+.ringrow { display: flex; align-items: center; gap: 14px; }
+.ringrow .big { font-size: 20px; }
+.days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+.days .d { background: var(--field); border-radius: 8px; padding: 6px 2px; text-align: center; font-size: 11px; color: var(--muted); min-height: 46px; }
+.days .d.today { outline: 1px solid var(--accent); color: var(--accent); }
+.days .dot { display: block; margin: 4px auto 0; width: 9px; height: 9px; border-radius: 50%; }
+.dot.k-tennis { background: #5cc98a; } .dot.k-crossfit { background: #8ec5ff; } .dot.k-gym { background: #ff7a45; } .dot.k-other { background: #b5b5b5; }
+.nut { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 14px; }
+.nut .n { font-size: 12px; color: var(--muted); display: flex; justify-content: space-between; gap: 6px; }
+.nut .n b { color: var(--fg); font-weight: 600; }
+.track { height: 6px; border-radius: 3px; background: var(--border); margin-top: 5px; overflow: hidden; }
+.track i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.track i.ok { background: var(--good); } .track i.bad { background: var(--bad); } .track i.low { background: var(--warn); }
+.lift { display: grid; grid-template-columns: 1fr 52px 52px 62px 34px; gap: 6px; margin-top: 6px; align-items: center; }
+.lift input { padding: 9px 7px !important; }
+.lift button { padding: 8px 0; }
+.lifthead { display: grid; grid-template-columns: 1fr 52px 52px 62px 34px; gap: 6px; font-size: 11px; color: var(--muted); margin-top: 8px; }
+.numgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.numgrid label { font-size: 11px; color: var(--muted); }
+.chips button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
+.kv { display: flex; justify-content: space-between; gap: 10px; font-size: 14px; padding: 6px 0; border-top: 1px solid var(--border); }
+.kv:first-of-type { border-top: 0; }
+.kv span:last-child { font-weight: 600; text-align: right; }
+
 /* sheets (details, add / edit) */
 .sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 10; display: flex; align-items: flex-end; }
 .sheet { background: var(--surface); border-top: 1px solid var(--border); width: 100%; border-radius: 18px 18px 0 0;
@@ -177,9 +204,9 @@ label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
   <nav class="tabs" aria-label="Life Desk">
     <button data-tab="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>Home</button>
     <button data-tab="todo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>To do<span class="count hidden" id="todoCount"></span></button>
-    <button data-tab="notes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h4"/></svg>Notes</button>
-    <button data-tab="plans"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Reminders</button>
-    <button data-tab="garden"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/></svg>Garden<span class="count hidden" id="gardenCount"></span></button>
+    <button data-tab="exercise"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Exercise</button>
+    <button data-tab="food"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-4-3-8 0-7 5 1 6 4 9 7 8 3 1 6-2 7-8 1-5-3-8-7-5z"/><path d="M12 7c0-2 1-3 3-4"/></svg>Food</button>
+    <button data-tab="more"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More<span class="count hidden" id="gardenCount"></span></button>
   </nav>
 </div>
 <div id="sheet" class="sheet-bg hidden"></div>
@@ -197,7 +224,10 @@ const WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MON_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
   "November", "December"];
-const TITLES = {home: "Home", todo: "To do", notes: "Notes", plans: "Reminders", garden: "Garden"};
+const TITLES = {home: "Home", todo: "To do", exercise: "Exercise", food: "Food", notes: "Notes", plans: "Reminders", garden: "Garden"};
+const HEALTH_OPS = ["workout_add", "workout_remove", "food_add", "food_remove"];  // 22 Nov 2026
+const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"];
+const NUTRIENTS = [["kcal", "Calories", "kcal"], ["protein", "Protein", "g"], ["carbs", "Carbs", "g"], ["sugar", "Sugar", "g"], ["fat", "Fat", "g"], ["fibre", "Fibre", "g"]];
 const LEAF = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/></svg>`;
 const CHECK_EVERY = 30000;  // while a change waits for the PC, look for a newer copy this often
 const $ = (id) => document.getElementById(id);
@@ -207,6 +237,8 @@ const store = {  // localStorage can be unavailable; the page still works withou
 };
 let snap = null, key = null, keySalt = null, locked = null, queue = [];
 let tab = store.get("tab") || "home", view = store.get("view") || "todo", planView = store.get("planView") || "reminders";
+let moreView = store.get("moreView") || "notes", foodDay = 0;  // foodDay: 0 today, -1 yesterday
+if (["notes", "plans", "garden"].includes(tab)) { moreView = tab; tab = "more"; }  // the tabs before 22 Nov 2026
 let noteSearch = "";
 let sendError = "", busy = false;
 
@@ -446,7 +478,7 @@ function current() {
   const find = (id) => items.find((t) => t.id === id || t.phone_id === id);
   const today = todayDate();
   for (const ch of queue) {
-    if (applied.has(ch.id)) continue;
+    if (applied.has(ch.id) || HEALTH_OPS.includes(ch.op)) continue;
     const mark = ch.sent ? "sent" : "unsent";
     if (ch.op === "add") {
       items.push({id: ch.item, phone_id: ch.item, ...ch.fields, created: ch.at, day: ch.fields.due ? parseIso(ch.fields.due).getDate() : null, waiting: mark});
@@ -515,7 +547,7 @@ function render() {
   $("synced").classList.toggle("stale", age > 48);
   $("syncedText").textContent = age > 48 ? `PC last seen ${ago(snap.made)}` : `updated ${ago(snap.made)}`;
   $("today").textContent = `${WD_LONG[today.getDay()]} ${today.getDate()} ${MON_LONG[today.getMonth()]}`;
-  $("pageTitle").textContent = TITLES[tab];
+  $("pageTitle").textContent = TITLES[tab === "more" ? moreView : tab];
   document.querySelectorAll("nav.tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const {todo} = current();
   const waiting = todo.filter((t) => needsYou(t, today)).length, gdue = gardenDue().length;
@@ -536,7 +568,7 @@ function render() {
     text = `${sent} change${sent > 1 ? "s" : ""} waiting for Life Desk on your PC (it checks every minute while it's open).`;
   }
   p.textContent = text; p.classList.toggle("hidden", !text); p.classList.toggle("warn", warn);
-  ({home: renderHome, todo: renderTodo, notes: renderNotes, plans: renderPlans, garden: renderGarden}[tab] || renderHome)();
+  ({home: renderHome, todo: renderTodo, exercise: renderExercise, food: renderFood, more: renderMore}[tab] || renderHome)();
 }
 
 // ---- Home: what needs you, like the PC's Home tab
@@ -566,6 +598,22 @@ function renderHome() {
     h += gdue.length ? gdue.slice(0, 5).map(({p, t}) => `<div class="row"><div class="top"><span class="badge s-due">Now</span><span class="t">${esc(t.task)}: ${esc(p.name)}</span></div></div>`).join("")
       : clear((snap.garden.plants || []).length ? "No plant care due." : "No plants yet - add them in Life Desk on your PC.");
     h += `</div>`;
+  }
+  if (snap.exercise) {
+    const ex = snap.exercise, wk = weekSessions(), behind = exBehind();
+    h += `<div class="card${behind ? " alert" : ""}"><div class="caps">Exercise <a href="#" data-go="exercise">Open ›</a></div>
+      <div class="ringrow">${ring(wk.length / ex.target, `${wk.length}/${ex.target}`, wk.length >= ex.target ? "var(--good)" : behind ? "var(--warn)" : "var(--accent)")}
+      <div><div class="t" style="font-weight:600">${esc(weekNote())}</div>
+      <div class="sub" style="margin-top:4px">${wk.map((s) => `<span class="badge ${kindClass(s.kind)}" style="margin:2px 4px 0 0;display:inline-block">${WD[parseIso(s.date).getDay()]} · ${esc(s.kind)}</span>`).join("") || "Nothing logged this week yet."}</div></div></div></div>`;
+  }
+  if (snap.nutrition) {
+    const n = snap.nutrition, es = foodEntries(iso(todayDate())), tot = foodTotals(es), fl = foodFlags(es, false);
+    const t = n.targets.kcal.amount;
+    h += `<div class="card${fl.some((f) => f[1] === "over") ? " alert" : ""}"><div class="caps">Food today <a href="#" data-go="food">Open ›</a></div>` +
+      (es.length ? `<div class="big">${Math.round(tot.kcal).toLocaleString("en-GB")}<small>of about ${t.toLocaleString("en-GB")} kcal · ${Math.round(tot.protein)} g protein</small></div>
+        <div class="track"><i style="width:${Math.min(100, 100 * tot.kcal / t)}%"></i></div>
+        ${fl.length ? `<div style="margin-top:10px">${fl.map(([k, s, text]) => `<span class="badge ${s === "over" ? "s-overdue" : s === "high" ? "s-today" : "s-soon"}" style="display:inline-block;margin:0 4px 4px 0">${esc(text)}</span>`).join("")}</div>` : ""}`
+        : clear("Nothing logged today yet.")) + `</div>`;
   }
   if (pinned.length) {
     h += `<div class="card"><div class="caps">Pinned notes <a href="#" data-go="notes">Open ›</a></div>` +
@@ -603,7 +651,7 @@ function renderNotes() {
   if (pinned.length) h += `<div class="section">PINNED</div><div class="list">${pinned.map(row).join("")}</div>`;
   if (rest.length) h += (pinned.length ? `<div class="section">NOTES</div>` : "") + `<div class="list">${rest.map(row).join("")}</div>`;
   h += `<div class="readonly">Read-only on the phone for now: write and change notes in Life Desk on your PC.</div>`;
-  $("page").innerHTML = h;
+  subEl().innerHTML = h;
   const s = $("noteSearch");
   s.oninput = () => { noteSearch = s.value; const pos = s.selectionStart; renderNotes(); const n = $("noteSearch"); n.focus(); n.setSelectionRange(pos, pos); };
 }
@@ -626,7 +674,7 @@ function renderPlans() {
       : `<div class="note">No renewals.</div>`;
   }
   h += `</div><div class="readonly">Read-only on the phone. When one is close it goes onto your to-do list, where you can tick it off here.</div>`;
-  $("page").innerHTML = h;
+  subEl().innerHTML = h;
 }
 
 // ---- Garden: your plants and what they need (read-only here), and the month's jobs
@@ -649,7 +697,275 @@ function renderGarden() {
   if ((g.jobs || []).length) h += `<div class="card" style="margin-top:14px"><div class="caps">Garden jobs for ${esc(g.month)}</div>` +
     g.jobs.map((j) => `<div class="row"><div class="top"><span class="badge s-${j.done ? "done" : "later"}">${j.done ? "Done" : "To do"}</span><span class="t" style="font-weight:400">${esc(j.job)}</span></div></div>`).join("") + `</div>`;
   h += `<div class="readonly">Read-only on the phone for now: add plants and tick off care in Life Desk on your PC.</div>`;
+  subEl().innerHTML = h;
+}
+
+// ---- More: Notes, Reminders and Garden, under one button
+function subEl() { return $("sub") || $("page"); }
+function renderMore() {
+  const gdue = gardenDue().length;
+  $("page").innerHTML = `<div class="bar"><div class="seg">${[["notes", "Notes"], ["plans", "Reminders"], ["garden", gdue ? `Garden (${gdue})` : "Garden"]]
+    .map(([k, l]) => `<button data-more="${k}" class="${moreView === k ? "on" : ""}">${l}</button>`).join("")}</div></div><div id="sub"></div>`;
+  ({notes: renderNotes, plans: renderPlans, garden: renderGarden}[moreView] || renderNotes)();
+}
+
+// ---- Exercise (22 Nov 2026): this week against your target, and logging a session with its weights
+function kindClass(k) { return {Tennis: "k-tennis", CrossFit: "k-crossfit", Gym: "k-gym"}[k] || "k-other"; }
+function monday(d) { return addDays(d, -((d.getDay() + 6) % 7)); }
+function ring(frac, text, colour) {
+  const r = 30, c = 2 * Math.PI * r, f = Math.max(0, Math.min(1, frac));
+  return `<svg width="76" height="76" viewBox="0 0 76 76" role="img" aria-label="${esc(text)}"><circle cx="38" cy="38" r="${r}" fill="none" stroke="var(--border)" stroke-width="7"/>
+    <circle cx="38" cy="38" r="${r}" fill="none" stroke="${colour}" stroke-width="7" stroke-linecap="round" stroke-dasharray="${f * c} ${c}" transform="rotate(-90 38 38)"/>
+    <text x="38" y="43" text-anchor="middle" fill="var(--fg)" font-size="16" font-weight="600">${esc(text)}</text></svg>`;
+}
+function currentSessions() {  // Life Desk's sessions, with this phone's logging laid on top
+  const applied = new Set(snap.applied || []);
+  let list = (snap.exercise?.sessions || []).map((s) => ({...s}));
+  for (const ch of queue) {
+    if (applied.has(ch.id)) continue;
+    if (ch.op === "workout_add") list.push({id: ch.item, phone_id: ch.item, ...ch.fields, waiting: ch.sent ? "sent" : "unsent"});
+    if (ch.op === "workout_remove") list = list.filter((s) => s.id !== ch.item && s.phone_id !== ch.item);
+  }
+  return list.sort((a, b) => b.date.localeCompare(a.date));
+}
+function weekSessions(start = monday(todayDate())) {
+  const a = iso(start), b = iso(addDays(start, 7));
+  return currentSessions().filter((s) => s.date >= a && s.date < b).sort((x, y) => x.date.localeCompare(y.date));
+}
+function weekNote() {
+  const today = todayDate(), left = snap.exercise.target - weekSessions().length, daysLeft = 7 - ((today.getDay() + 6) % 7);
+  if (left <= 0) return "Target hit for this week";
+  const w = {1: "One", 2: "Two", 3: "Three", 4: "Four"}[left] || left;
+  return left > daysLeft ? `${w} more to go, with ${daysLeft} day${daysLeft !== 1 ? "s" : ""} left` : `${w} more by Sunday`;
+}
+function exBehind() {
+  const left = snap.exercise.target - weekSessions().length;
+  return left > 0 && left >= 7 - ((todayDate().getDay() + 6) % 7);
+}
+function liftText(l) {
+  const bits = [];
+  if (l.sets && l.reps) bits.push(`${l.sets} × ${l.reps}`); else if (l.reps) bits.push(`${l.reps} reps`); else if (l.sets) bits.push(`${l.sets} sets`);
+  if (l.kg !== null && l.kg !== undefined && l.kg !== "") bits.push(`${bits.length ? "at " : ""}${l.kg} kg`);
+  return bits.join(" ") || "no weights noted";
+}
+function sessionLine(s) {
+  const bits = s.minutes ? [`${s.minutes} min`] : [];
+  if ((s.lifts || []).length) bits.push(s.lifts.slice(0, 3).map((l) => `${l.name} ${liftText(l)}`).join(", ") + (s.lifts.length > 3 ? ` and ${s.lifts.length - 3} more` : ""));
+  if (s.notes) bits.push(s.notes.split("\n")[0].slice(0, 80));
+  return bits.join("  ·  ") || "No details";
+}
+function sessionRow(s) {
+  return `<button class="row" data-sess="${esc(s.id)}"><div class="top"><span class="badge ${kindClass(s.kind)}">${esc(s.kind)}</span>
+    <span class="t">${esc(niceDate(parseIso(s.date)))}</span></div><div class="sub">${esc(sessionLine(s))}</div>
+    ${s.waiting ? `<div class="wait">${s.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}</button>`;
+}
+function renderExercise() {
+  const ex = snap.exercise;
+  if (!ex) { $("page").innerHTML = `<div class="note">Exercise comes from Life Desk on your PC - restart it there to send it here.</div>`; return; }
+  const today = todayDate(), start = monday(today), wk = weekSessions(start), hit = wk.length >= ex.target;
+  let h = `<div class="card${exBehind() ? " alert" : ""}"><div class="ringrow">${ring(wk.length / ex.target, `${wk.length}/${ex.target}`, hit ? "var(--good)" : exBehind() ? "var(--warn)" : "var(--accent)")}
+    <div style="flex:1"><div class="caps" style="margin:0 0 4px">This week</div><div style="font-weight:600">${wk.length} of ${ex.target} sessions</div><div class="sub muted" style="font-size:13px">${esc(weekNote())}</div></div></div>
+    <div class="days">${[0, 1, 2, 3, 4, 5, 6].map((i) => { const d = addDays(start, i), ds = wk.filter((s) => s.date === iso(d));
+      return `<div class="d${iso(d) === iso(today) ? " today" : ""}">${WD[d.getDay()].slice(0, 2)}<br>${d.getDate()}${ds.map((s) => `<span class="dot ${kindClass(s.kind)}"></span>`).join("")}</div>`; }).join("")}</div></div>
+    <div class="bar"><button class="primary" id="logBtn" style="flex:1">+ Log a session</button></div>`;
+  const all = currentSessions();
+  h += `<div class="section">RECENT</div><div class="list">${all.slice(0, 8).map(sessionRow).join("") || `<div class="note">Nothing logged yet.</div>`}</div>`;
+  if ((ex.lifts || []).length) {
+    h += `<div class="card" style="margin-top:14px"><div class="caps">Your lifts</div>` + ex.lifts.map((l) =>
+      `<div class="row"><div class="top"><span class="t">${esc(l.name)}</span>${l.best ? `<span class="badge s-today">Best ${esc(l.best)}</span>` : ""}</div>
+       <div class="sub">last ${esc(l.last)} · ${esc(niceDate(parseIso(l.last_date)))}</div></div>`).join("") + `</div>`;
+  }
   $("page").innerHTML = h;
+}
+function sessionSheet(id) {
+  const s = currentSessions().find((x) => x.id === id);
+  if (!s) return;
+  const el = openSheet(`<span class="badge ${kindClass(s.kind)}">${esc(s.kind)}</span><h2>${esc(longDate(parseIso(s.date)))}</h2>
+    <div class="muted">${s.minutes ? `${s.minutes} minutes` : "No time noted"}</div>
+    ${(s.lifts || []).length ? `<h3>Weights</h3>${s.lifts.map((l) => `<div class="kv"><span>${esc(l.name)}</span><span>${esc(liftText(l))}</span></div>`).join("")}` : ""}
+    ${s.notes ? `<h3>Notes</h3><div class="body">${esc(s.notes)}</div>` : ""}
+    ${s.waiting ? `<div class="wait" style="margin-top:10px">${s.waiting === "sent" ? "Waiting for Life Desk on your PC." : "Not sent yet."}</div>` : ""}
+    <div class="btns"><button id="sClose">Close</button><button id="sRemove" class="danger">Remove</button></div>`);
+  el.querySelector("#sClose").onclick = closeSheet;
+  el.querySelector("#sRemove").onclick = async () => {
+    closeSheet();
+    const unsent = queue.find((c) => c.op === "workout_add" && c.item === s.id && !c.sent);
+    if (unsent) { queue = queue.filter((c) => c !== unsent); await saveQueue(); render(); }  // never left the phone
+    else await queueChange("workout_remove", s.phone_id || s.id);
+    toast(`Removed your ${s.kind} session. It's under Removed in Life Desk on your PC.`);
+  };
+}
+function logSheet() {
+  const ex = snap.exercise, kinds = [...(ex.kinds || ["Tennis", "CrossFit", "Gym"]), "Other"];
+  const names = [...new Set([...(ex.lifts || []).map((l) => l.name), ...currentSessions().flatMap((s) => (s.lifts || []).map((l) => l.name))])];
+  let kind = "Gym";
+  const el = openSheet(`<h2>Log a session</h2>
+    <label class="f">What</label><div class="chips" id="lKinds">${kinds.map((k) => `<button data-k="${esc(k)}" class="${k === kind ? "on" : ""}">${esc(k)}</button>`).join("")}</div>
+    <input id="lOther" class="hidden" style="margin-top:8px" placeholder="e.g. Swimming" autocomplete="off">
+    <label class="f" for="lDate">When</label><input id="lDate" type="date" value="${iso(todayDate())}" max="${iso(todayDate())}">
+    <div class="chips"><button data-d="0">Today</button><button data-d="-1">Yesterday</button></div>
+    <label class="f" for="lMins">Minutes (optional)</label><input id="lMins" type="number" inputmode="numeric" min="0" placeholder="e.g. 60">
+    <label class="f">Weights</label><div class="lifthead"><span>Lift</span><span>Sets</span><span>Reps</span><span>kg</span><span></span></div>
+    <div id="lLifts"></div><datalist id="liftNames">${names.map((n) => `<option value="${esc(n)}">`).join("")}</datalist>
+    <div class="chips"><button id="lAdd">+ Add a lift</button><button id="lSame">Same as last time</button></div>
+    <label class="f" for="lNotes">Notes</label><textarea id="lNotes"></textarea>
+    <div class="err" id="lErr"></div>
+    <div class="btns"><button class="primary" id="lSave">Log it</button><button id="lCancel">Cancel</button></div>`);
+  const lifts = el.querySelector("#lLifts");
+  const addLift = (l = {}) => {
+    const r = document.createElement("div"); r.className = "lift";
+    r.innerHTML = `<input list="liftNames" placeholder="Bench press" value="${esc(l.name || "")}"><input type="number" inputmode="numeric" value="${l.sets ?? ""}"><input type="number" inputmode="numeric" value="${l.reps ?? ""}"><input type="number" inputmode="decimal" step="0.5" value="${l.kg ?? ""}"><button aria-label="Remove this lift">✕</button>`;
+    r.querySelector("button").onclick = () => r.remove();
+    lifts.appendChild(r);
+  };
+  el.querySelectorAll("#lKinds button").forEach((b) => b.onclick = () => {
+    kind = b.dataset.k; el.querySelectorAll("#lKinds button").forEach((x) => x.classList.toggle("on", x === b));
+    el.querySelector("#lOther").classList.toggle("hidden", kind !== "Other");
+  });
+  el.querySelectorAll("[data-d]").forEach((b) => b.onclick = () => { el.querySelector("#lDate").value = iso(addDays(todayDate(), Number(b.dataset.d))); });
+  el.querySelector("#lAdd").onclick = () => addLift();
+  el.querySelector("#lSame").onclick = () => {
+    const mine = currentSessions().find((s) => s.kind === kind && (s.lifts || []).length);
+    const last = mine ? mine.lifts : (ex.last_lifts || {})[kind] || (ex.last_lifts || {}).Gym;
+    if (!last) { el.querySelector("#lErr").textContent = "There's no earlier session with weights to copy yet."; return; }
+    lifts.innerHTML = ""; last.forEach((l) => addLift(l));
+  };
+  if (kind === "Gym") addLift();
+  el.querySelector("#lCancel").onclick = closeSheet;
+  el.querySelector("#lSave").onclick = async () => {
+    const k = kind === "Other" ? el.querySelector("#lOther").value.trim() : kind;
+    const date = el.querySelector("#lDate").value, err = el.querySelector("#lErr");
+    if (!k) { err.textContent = "Type what you did (e.g. Swimming)."; return; }
+    if (!date || date > iso(todayDate())) { err.textContent = "Pick the day you did it (today or earlier)."; return; }
+    const num = (v) => v === "" ? null : Number(v);
+    const ls = [...lifts.querySelectorAll(".lift")].map((r) => { const v = [...r.querySelectorAll("input")].map((i) => i.value.trim());
+      return {name: v[0], sets: num(v[1]), reps: num(v[2]), kg: num(v[3])}; }).filter((l) => l.name);
+    const mins = el.querySelector("#lMins").value.trim();
+    const fields = {date, kind: k, minutes: mins ? Number(mins) : null, notes: el.querySelector("#lNotes").value.trim(), lifts: ls};
+    closeSheet();
+    await queueChange("workout_add", newTempId(), {fields});
+    const n = weekSessions().length;
+    toast(`Logged ${k}. That's ${n} of ${ex.target} this week.`);
+  };
+}
+
+// ---- Food (22 Nov 2026): today's totals against your targets, and adding what you ate (your PC's Claude estimates it)
+function currentFood() {
+  const applied = new Set(snap.applied || []);
+  let list = (snap.nutrition?.entries || []).map((e) => ({...e}));
+  for (const ch of queue) {
+    if (applied.has(ch.id)) continue;
+    if (ch.op === "food_add") {
+      const f = ch.fields, v = f.values || {};
+      list.push({id: ch.item, phone_id: ch.item, date: f.date, meal: f.meal, text: f.text, ...v,
+        source: f.values ? (f.source || "me") : "pending", waiting: ch.sent ? "sent" : "unsent"});
+    }
+    if (ch.op === "food_remove") list = list.filter((e) => e.id !== ch.item && e.phone_id !== ch.item);
+  }
+  return list;
+}
+function foodEntries(day) {
+  return currentFood().filter((e) => e.date === day).sort((a, b) => (MEALS.indexOf(a.meal) - MEALS.indexOf(b.meal)));
+}
+function foodTotals(es) { return Object.fromEntries(NUTRIENTS.map(([k]) => [k, es.reduce((t, e) => t + (Number(e[k]) || 0), 0)])); }
+function nutState(amount, t, dayOver) {  // nutrition_core.state
+  if (t.kind === "max") return amount > t.amount ? "over" : "ok";
+  if (t.kind === "min") return amount >= t.amount || !dayOver ? "ok" : "low";
+  if (amount > t.amount * 1.10) return "high";
+  return dayOver && amount < t.amount * 0.85 ? "low" : "ok";
+}
+function amountText(k, v) { return v === null || v === undefined ? "–" : k === "kcal" ? `${Math.round(v).toLocaleString("en-GB")} kcal` : `${v >= 10 || v === Math.round(v) ? Math.round(v) : v.toFixed(1)} g`; }
+function foodFlags(es, dayOver) {
+  if (!es.length) return [];
+  const tot = foodTotals(es), out = [];
+  for (const [k, name] of NUTRIENTS) {
+    const t = snap.nutrition.targets[k], st = nutState(tot[k], t, dayOver), gap = Math.abs(tot[k] - t.amount);
+    if (st === "over" || st === "high") out.push([k, st, `${name}: ${amountText(k, gap)} over`]);
+    else if (st === "low") out.push([k, st, `${name}: ${amountText(k, gap)} short`]);
+    else if (t.kind === "min" && tot[k] < t.amount) out.push([k, "to go", `${name}: ${amountText(k, gap)} to go`]);
+  }
+  return out;
+}
+function foodLine(e) {
+  if (e.source === "pending") return e.waiting ? "Your PC's Claude estimates this when it gets it" : "Waiting for Claude's estimate on your PC";
+  if (String(e.source || "").startsWith("failed")) return "Couldn't estimate it - change it in Life Desk on your PC";
+  const bits = [(e.source === "claude" ? "about " : "") + amountText("kcal", e.kcal)];
+  for (const k of ["protein", "fibre", "sugar"]) if (e[k] !== null && e[k] !== undefined) bits.push(`${amountText(k, e[k])} ${k}`);
+  return bits.join("  ·  ");
+}
+function renderFood() {
+  const n = snap.nutrition;
+  if (!n) { $("page").innerHTML = `<div class="note">Food comes from Life Desk on your PC - restart it there to send it here.</div>`; return; }
+  const day = addDays(todayDate(), foodDay), es = foodEntries(iso(day)), tot = foodTotals(es), dayOver = foodDay < 0;
+  const fl = foodFlags(es, dayOver);
+  let h = `<div class="bar"><div class="seg"><button data-fday="0" class="${foodDay === 0 ? "on" : ""}">Today</button><button data-fday="-1" class="${foodDay === -1 ? "on" : ""}">Yesterday</button></div><button class="primary" id="foodBtn">+ Add</button></div>`;
+  h += `<div class="card${fl.some((f) => f[1] === "over") ? " alert" : ""}"><div class="nut">${NUTRIENTS.map(([k, name]) => {
+    const t = n.targets[k], st = nutState(tot[k], t, dayOver), met = t.kind === "min" && tot[k] >= t.amount;
+    const cls = st === "over" ? "bad" : st === "low" || st === "high" ? "low" : met ? "ok" : "";
+    return `<div><div class="n"><span>${name}</span><span><b>${amountText(k, tot[k]).replace(" kcal", "")}</b> / ${amountText(k, t.amount).replace(" kcal", "")}</span></div>
+      <div class="track"><i class="${cls}" style="width:${Math.min(100, t.amount ? 100 * tot[k] / t.amount : 0)}%"></i></div></div>`; }).join("")}</div>
+    ${fl.length ? `<div style="margin-top:12px">${fl.map(([k, s, text]) => `<span class="badge ${s === "over" ? "s-overdue" : s === "low" || s === "high" ? "s-today" : "s-soon"}" style="display:inline-block;margin:0 4px 4px 0">${esc(text)}</span>`).join("")}</div>` : ""}</div>`;
+  if (!es.length) h += `<div class="note">Nothing logged ${foodDay ? "yesterday" : "today"} yet. Press + Add and type what you had - Claude on your PC works out the numbers.</div>`;
+  let last = null;
+  for (const e of es) {
+    if (e.meal !== last) { h += `<div class="section">${esc(e.meal.toUpperCase())}</div>`; last = e.meal; }
+    h += `<button class="row" data-food="${esc(e.id)}" style="margin-bottom:6px"><div class="t">${esc(e.text)}</div><div class="sub">${esc(foodLine(e))}</div>
+      ${e.waiting ? `<div class="wait">${e.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}</button>`;
+  }
+  $("page").innerHTML = h;
+}
+function mealNow() { const n = new Date(), h = n.getHours() + n.getMinutes() / 60; return h < 10.5 ? "Breakfast" : h < 14.5 ? "Lunch" : h < 17 ? "Snack" : h < 21 ? "Dinner" : "Snack"; }
+function foodSheet() {
+  const n = snap.nutrition, day = iso(addDays(todayDate(), foodDay));
+  let meal = foodDay ? "Dinner" : mealNow();
+  const recent = n.recent || [];
+  const el = openSheet(`<h2>Add what you ate${foodDay ? " yesterday" : ""}</h2>
+    <label class="f">Meal</label><div class="chips" id="fMeals">${MEALS.map((m) => `<button data-m="${m}" class="${m === meal ? "on" : ""}">${m}</button>`).join("")}</div>
+    <label class="f" for="fText">What you had</label><input id="fText" autocomplete="off" placeholder="e.g. 2 slices of toast with peanut butter, tea">
+    <div class="read">In plain words - Claude on your PC works out the numbers when Life Desk next checks.</div>
+    <div class="chips"><button id="fNums">I know the numbers</button></div>
+    <div id="fGrid" class="numgrid hidden" style="margin-top:8px">${NUTRIENTS.map(([k, name, u]) => `<div><label for="n_${k}">${name} (${u})</label><input id="n_${k}" type="number" inputmode="decimal"></div>`).join("")}</div>
+    <div class="err" id="fErr"></div>
+    <div class="btns"><button class="primary" id="fSave">Add</button><button id="fCancel">Cancel</button></div>
+    ${recent.length ? `<h3>Had before - tap to add again</h3><div class="chips">${recent.map((r, i) => `<button data-r="${i}">${esc(r.text)}</button>`).join("")}</div>` : ""}`);
+  el.querySelectorAll("#fMeals button").forEach((b) => b.onclick = () => { meal = b.dataset.m; el.querySelectorAll("#fMeals button").forEach((x) => x.classList.toggle("on", x === b)); });
+  el.querySelector("#fNums").onclick = () => el.querySelector("#fGrid").classList.toggle("hidden");
+  el.querySelector("#fCancel").onclick = closeSheet;
+  const send = async (text, values, source) => {
+    closeSheet();
+    await queueChange("food_add", newTempId(), {fields: {date: day, meal, text, values, source}});
+    toast(`Added ${text} to ${meal.toLowerCase()}.` + (values ? "" : " Your PC will estimate it."));
+  };
+  el.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => {
+    const r = recent[Number(b.dataset.r)];
+    send(r.text, Object.fromEntries(NUTRIENTS.map(([k]) => [k, r[k]])), r.source);
+  });
+  el.querySelector("#fSave").onclick = () => {
+    const text = el.querySelector("#fText").value.trim();
+    if (!text) { el.querySelector("#fErr").textContent = "Type what you had first."; return; }
+    const vals = Object.fromEntries(NUTRIENTS.map(([k]) => [k, el.querySelector(`#n_${k}`).value.trim()]));
+    const has = Object.values(vals).some((v) => v !== "");
+    send(text, has ? Object.fromEntries(Object.entries(vals).map(([k, v]) => [k, v === "" ? null : Number(v)])) : null, has ? "me" : null);
+  };
+  setTimeout(() => el.querySelector("#fText").focus(), 50);
+}
+function foodEntrySheet(id) {
+  const e = currentFood().find((x) => x.id === id);
+  if (!e) return;
+  const has = e.kcal !== null && e.kcal !== undefined && e.source !== "pending";
+  const el = openSheet(`<span class="badge s-later">${esc(e.meal)}</span><h2>${esc(e.text)}</h2>
+    <div class="muted">${esc(niceDate(parseIso(e.date)))}${e.source === "claude" ? " · Claude's estimate" : e.source === "me" ? " · your numbers" : ""}</div>
+    ${has ? `<h3>Numbers</h3>${NUTRIENTS.map(([k, name]) => `<div class="kv"><span>${name}</span><span>${esc(amountText(k, e[k]))}</span></div>`).join("")}` : `<div class="read">${esc(foodLine(e))}</div>`}
+    ${e.note ? `<div class="read">Claude: ${esc(e.note)}</div>` : ""}
+    <div class="btns"><button id="sClose">Close</button><button id="sRemove" class="danger">Remove</button></div>`);
+  el.querySelector("#sClose").onclick = closeSheet;
+  el.querySelector("#sRemove").onclick = async () => {
+    closeSheet();
+    const unsent = queue.find((c) => c.op === "food_add" && c.item === e.id && !c.sent);
+    if (unsent) { queue = queue.filter((c) => c !== unsent); await saveQueue(); render(); }
+    else await queueChange("food_remove", e.phone_id || e.id);
+    toast(`Removed ${e.text}.`);
+  };
 }
 
 // ---- taps
@@ -659,11 +975,21 @@ document.querySelector("nav.tabs").addEventListener("click", (e) => {
   tab = b.dataset.tab; store.set("tab", tab); window.scrollTo(0, 0); render();
 });
 $("page").addEventListener("click", (e) => {
-  const el = e.target.closest("[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],#addBtn");
+  const el = e.target.closest("[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],[data-more],[data-sess],[data-food],[data-fday],#addBtn,#logBtn,#foodBtn");
   if (!el) return;
   e.preventDefault();
   if (el.id === "addBtn") return editor(null);
-  if (el.dataset.go) { tab = el.dataset.go; store.set("tab", tab); window.scrollTo(0, 0); return render(); }
+  if (el.id === "logBtn") return logSheet();
+  if (el.id === "foodBtn") return foodSheet();
+  if (el.dataset.go) {
+    const go = el.dataset.go;
+    if (["notes", "plans", "garden"].includes(go)) { moreView = go; store.set("moreView", go); tab = "more"; } else tab = go;
+    store.set("tab", tab); window.scrollTo(0, 0); return render();
+  }
+  if (el.dataset.more) { moreView = el.dataset.more; store.set("moreView", moreView); window.scrollTo(0, 0); return render(); }
+  if (el.dataset.fday) { foodDay = Number(el.dataset.fday); return render(); }
+  if (el.dataset.sess) return sessionSheet(el.dataset.sess);
+  if (el.dataset.food) return foodEntrySheet(el.dataset.food);
   if (el.dataset.view) { view = el.dataset.view; store.set("view", view); return render(); }
   if (el.dataset.plan) { planView = el.dataset.plan; store.set("planView", planView); return render(); }
   if (el.dataset.id) return details(el.dataset.id);
