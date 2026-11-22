@@ -677,6 +677,7 @@ $("reload").onclick = () => refresh();
 // ---- sheets
 function openSheet(html) {
   const s = $("sheet");
+  $("toast").classList.add("hidden");  // so a message never sits over the sheet
   s.innerHTML = `<div class="sheet">${html}</div>`;
   s.classList.remove("hidden");
   return s.firstElementChild;
