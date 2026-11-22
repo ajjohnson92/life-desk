@@ -3,112 +3,152 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#1e1f22">
+<meta name="theme-color" content="#0b0b0c">
 <meta name="robots" content="noindex, nofollow">
 <title>Life Desk</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <style>
-/* Life Desk's own colours (theme.py, the same as Tutor Desk's), dark and light */
+/* Life Desk's "Carbon" look (22 Nov 2026, as on the PC since 20 Nov): near-black and greys, one orange accent */
 :root, :root[data-theme="dark"] {
-  --bg: #1e1f22; --surface: #2b2d31; --field: #313338; --border: #3f4147;
-  --fg: #e8e9eb; --muted: #9ba1a9; --accent: #4c8bf5; --amber: #e0a040; --now: #ef4444;
+  --bg: #0b0b0c; --surface: #161618; --field: #1c1c1f; --border: #2a2a2e; --hover: #232326; --bar: #080808;
+  --fg: #ececec; --muted: #8a8a8a; --dim: #6a6a6a; --accent: #ff7a45; --accent-fg: #140a05; --warn: #ffb15c;
+  --good: #5cc98a; --bad: #ff5a4f; --alert: #21160f; --alert-edge: #a8502b; --sel: #2a1a12;
   /* the status labels (theme.py "badges") */
-  --b-ns: #2d3445; --b-ns-fg: #b9c6dd; --b-due: #4b2226; --b-due-fg: #f4a3a3; --b-draft: #4a3518; --b-draft-fg: #f7c27a;
-  --b-sub: #1d3b2a; --b-sub-fg: #8fd6a5; --b-skip: #34363c; --b-skip-fg: #9ba1a9;
+  --b-ns: #26262a; --b-ns-fg: #b5b5b5; --b-due: #4b2226; --b-due-fg: #f4a3a3; --b-draft: #4a3518; --b-draft-fg: #f7c27a;
+  --b-sub: #1d3b2a; --b-sub-fg: #8fd6a5; --b-skip: #222224; --b-skip-fg: #8a8a8a;
 }
 :root[data-theme="light"] {
-  --bg: #f5f5f4; --surface: #e9e9e7; --field: #ffffff; --border: #c9c9c6;
-  --fg: #1f2328; --muted: #6b7280; --accent: #2563eb; --amber: #b45309; --now: #ef4444;
+  --bg: #f5f5f4; --surface: #e9e9e7; --field: #ffffff; --border: #c9c9c6; --hover: #dededb; --bar: #ebebe9;
+  --fg: #1f2328; --muted: #6b7280; --dim: #9ca3af; --accent: #2563eb; --accent-fg: #ffffff; --warn: #b45309;
+  --good: #2f9e5f; --bad: #c62828; --alert: #fdf0dc; --alert-edge: #e0a040; --sel: #e6eefd;
   --b-ns: #e3e8f2; --b-ns-fg: #3b4a66; --b-due: #fbdcdc; --b-due-fg: #9b1c1c; --b-draft: #fdebd3; --b-draft-fg: #8a4b08;
   --b-sub: #dcf2e3; --b-sub-fg: #1d6b3a; --b-skip: #e7e7e5; --b-skip-fg: #6b7280;
 }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); touch-action: pan-x pan-y; }  /* the page never zooms */
-body { font: 15px/1.35 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; min-height: 100vh;
-  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
+body { font: 15px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; min-height: 100vh;
+  padding: env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom)); }
 button, input, select, textarea { font: inherit; color: var(--fg); }
-button { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 8px 12px; cursor: pointer; }
-button:active { background: var(--field); }
-button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+button { background: var(--hover); border: 1px solid var(--border); border-radius: 9px; padding: 9px 14px; cursor: pointer; font-weight: 600; }
+button:active { background: var(--border); }
+button.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); }
 button:disabled { opacity: .5; }
 .muted { color: var(--muted); }
 .hidden { display: none !important; }
+svg.i { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 
-/* top bar, like Life Desk's */
-header { display: flex; align-items: center; gap: 10px; padding: 12px 16px 8px; }
-header h1 { font-size: 20px; margin: 0; font-weight: 700; flex: 1; }
-.synced { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
-.synced .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
-.synced.stale { color: var(--amber); } .synced.stale .dot { background: var(--amber); }
+/* the top: date and the page's name, like the PC */
+header { display: flex; align-items: flex-end; gap: 10px; padding: 14px 16px 6px; }
+header .titles { flex: 1; min-width: 0; }
+header .date { font-size: 12px; color: var(--muted); }
+header h1 { font-size: 26px; margin: 0; font-weight: 600; letter-spacing: -.2px; }
+.synced { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); padding-bottom: 6px; }
+.synced .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--good); }
+.synced.stale { color: var(--warn); } .synced.stale .dot { background: var(--warn); }
 .synced.busy .dot { background: var(--accent); }
-.icon-btn { padding: 5px 9px; font-size: 16px; line-height: 1; }
-main { padding: 4px 16px 32px; }
+.icon-btn { width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 2px; }
+main { padding: 6px 16px 24px; }
 
-.bar { display: flex; align-items: center; gap: 8px; }
-.seg { display: inline-flex; flex: 1; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
-.seg button { flex: 1; border: none; border-radius: 0; background: var(--surface); padding: 8px 10px; }
-.seg button.on { background: var(--accent); color: #fff; font-weight: 600; }
-.bar .primary { white-space: nowrap; padding: 8px 16px; }
-.info { font-size: 13px; margin: 8px 0 0; }
-.info.warn { color: var(--amber); }
+/* the bar along the bottom */
+nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bar); border-top: 1px solid var(--border);
+  display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
+nav.tabs button { background: none; border: 0; border-radius: 10px; padding: 6px 2px 4px; color: var(--muted);
+  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; position: relative; }
+nav.tabs button.on { color: var(--fg); }
+nav.tabs button.on svg { color: var(--accent); }
+nav.tabs .count { position: absolute; top: 2px; left: calc(50% + 8px); background: var(--accent); color: var(--accent-fg);
+  font-size: 10px; border-radius: 8px; padding: 0 5px; line-height: 16px; }
 
-/* the list */
-.list { margin-top: 10px; border-top: 1px solid var(--border); }
-.row { display: block; width: 100%; text-align: left; border: none; border-bottom: 1px solid var(--border);
-  border-radius: 0; background: none; padding: 10px 2px; }
+.bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+.seg { display: inline-flex; flex: 1; background: var(--field); border-radius: 11px; padding: 4px; gap: 2px; }
+.seg button { flex: 1; border: none; background: transparent; padding: 7px 8px; border-radius: 8px; color: var(--muted); font-size: 14px; }
+.seg button.on { background: var(--hover); color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent); }
+.bar .primary { white-space: nowrap; padding: 9px 16px; }
+.info { font-size: 13px; margin: 0 0 8px; }
+.info.warn { color: var(--warn); }
+.readonly { font-size: 12px; color: var(--muted); margin: 10px 2px 0; }
+
+/* cards and rows */
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 14px 14px 10px; margin-bottom: 12px; }
+.card.alert { background: var(--alert); border-color: var(--alert-edge); }
+.caps { font-size: 11px; letter-spacing: .18em; color: var(--muted); font-weight: 600; text-transform: uppercase; margin: 0 0 8px;
+  display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.card.alert .caps { color: var(--accent); }
+.caps a { letter-spacing: 0; text-transform: none; color: var(--accent); font-size: 13px; text-decoration: none; }
+.big { font-size: 26px; font-weight: 600; line-height: 1.1; }
+.big small { font-size: 14px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+.clear { display: flex; align-items: center; gap: 10px; color: var(--muted); padding: 4px 0 6px; }
+.clear .tick { width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #2f3a33; display: inline-flex; align-items: center; justify-content: center; color: var(--good); }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.row { display: block; width: 100%; text-align: left; background: var(--field); border: 1px solid var(--border);
+  border-radius: 12px; padding: 10px 12px; font-weight: 400; }
+.card .row { background: transparent; border: 0; border-top: 1px solid var(--border); border-radius: 0; padding: 9px 2px; }
+.card .row:first-of-type { border-top: 0; }
+.row:active { background: var(--hover); }
 .row .top { display: flex; align-items: flex-start; gap: 8px; }
 .row .t { font-weight: 600; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .row .sub { font-size: 13px; color: var(--muted); margin-top: 3px; overflow-wrap: anywhere; }
-.row .wait { font-size: 12px; color: var(--amber); margin-top: 3px; }
+.row .wait { font-size: 12px; color: var(--warn); margin-top: 3px; }
 .row.ticked .t { color: var(--muted); }
+.row .thumb { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; flex: none; background: var(--hover);
+  display: inline-flex; align-items: center; justify-content: center; color: var(--good); }
+.section { font-size: 11px; letter-spacing: .18em; color: var(--muted); font-weight: 600; margin: 14px 2px 6px; }
 .note { text-align: center; color: var(--muted); padding: 32px 8px; }
-.badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 3px; white-space: nowrap; flex: none; }
+.badge { font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 6px; white-space: nowrap; flex: none; }
 .s-overdue { background: var(--b-due); color: var(--b-due-fg); }
-.s-today { background: var(--b-draft); color: var(--b-draft-fg); }
-.s-soon, .s-later { background: var(--b-ns); color: var(--b-ns-fg); }
-.s-nodate, .s-removed { background: var(--b-skip); color: var(--b-skip-fg); }
+.s-today, .s-due, .s-price { background: var(--b-draft); color: var(--b-draft-fg); }
+.s-soon, .s-coming { background: var(--b-ns); color: var(--b-ns-fg); }
+.s-later, .s-nodate, .s-removed { background: var(--b-skip); color: var(--b-skip-fg); }
 .s-done { background: var(--b-sub); color: var(--b-sub-fg); }
+.s-list { background: #3a2516; color: #ff9466; }
 
 /* sheets (details, add / edit) */
-.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 10; display: flex; align-items: flex-end; }
-.sheet { background: var(--surface); border-top: 1px solid var(--border); width: 100%; border-radius: 12px 12px 0 0;
+.sheet-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 10; display: flex; align-items: flex-end; }
+.sheet { background: var(--surface); border-top: 1px solid var(--border); width: 100%; border-radius: 18px 18px 0 0;
   max-height: 92vh; overflow-y: auto; overscroll-behavior: contain;
   padding: 16px 16px calc(16px + env(safe-area-inset-bottom)); }
-.sheet h2 { font-size: 18px; margin: 8px 0 4px; overflow-wrap: anywhere; }
-.sheet h3 { font-size: 14px; margin: 16px 0 4px; }
-.sheet .body { white-space: pre-wrap; font-size: 14px; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 6px; padding: 8px; overflow-wrap: anywhere; }
+.sheet h2 { font-size: 20px; margin: 8px 0 4px; overflow-wrap: anywhere; font-weight: 600; }
+.sheet h3 { font-size: 11px; letter-spacing: .18em; color: var(--muted); text-transform: uppercase; margin: 18px 0 6px; }
+.sheet .body { white-space: pre-wrap; font-size: 14px; background: var(--field); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px; overflow-wrap: anywhere; }
 .sheet .btns { display: flex; gap: 8px; margin-top: 16px; }
-.sheet .btns button { flex: 1; padding: 11px 8px; }
-.sheet .danger { color: var(--b-due-fg); }
+.sheet .btns button { flex: 1; padding: 12px 8px; }
+.sheet .danger { color: var(--b-due-fg); background: transparent; }
+.sheet img.photo { width: 100%; max-height: 260px; object-fit: contain; border-radius: 12px; background: var(--field); }
+.task { background: var(--field); border: 1px solid var(--border); border-radius: 12px; padding: 10px 12px; margin-bottom: 6px; }
+.task .top { display: flex; align-items: center; gap: 8px; }
+.task .t { font-weight: 600; flex: 1; }
+.task .sub { font-size: 13px; color: var(--muted); margin-top: 4px; }
 .hist div { font-size: 13px; color: var(--muted); margin: 2px 0; }
 label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
 .sheet input, .sheet select, .sheet textarea { width: 100%; background: var(--field); border: 1px solid var(--border);
-  border-radius: 6px; padding: 9px 10px; }
+  border-radius: 10px; padding: 10px 11px; }
 .sheet textarea { min-height: 76px; resize: vertical; }
 .sheet input:focus, .sheet select:focus, .sheet textarea:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
-.chips button { font-size: 13px; padding: 5px 11px; border-radius: 14px; }
+.chips button { font-size: 13px; padding: 6px 12px; border-radius: 14px; }
 .read { font-size: 13px; color: var(--muted); margin-top: 6px; }
-.err { color: var(--now); font-size: 13px; min-height: 1.2em; margin-top: 8px; }
+.err { color: var(--bad); font-size: 13px; min-height: 1.2em; margin-top: 8px; }
+.search { width: 100%; background: var(--field); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
+.search:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
-.toast { position: fixed; left: 16px; right: 16px; bottom: calc(18px + env(safe-area-inset-bottom)); z-index: 20;
-  background: var(--field); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; font-size: 14px;
-  box-shadow: 0 4px 16px rgba(0,0,0,.3); }
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 20;
+  background: var(--field); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; font-size: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.4); }
 
 /* lock screen */
-.lock { max-width: 380px; width: calc(100% - 32px); margin: 12vh auto 0; padding: 24px 20px; background: var(--surface);
-  border: 1px solid var(--border); border-radius: 10px; text-align: center; }
-.lock img { width: 64px; height: 64px; border-radius: 14px; }
-.lock h1 { font-size: 20px; margin: 8px 0 4px; }
-.lock input { width: 100%; margin: 14px 0 10px; padding: 10px; font: 600 17px/1 ui-monospace, Consolas, monospace;
+.lock { max-width: 380px; width: calc(100% - 32px); margin: 12vh auto 0; padding: 26px 20px; background: var(--surface);
+  border: 1px solid var(--border); border-radius: 18px; text-align: center; }
+.lock img { width: 64px; height: 64px; border-radius: 16px; }
+.lock h1 { font-size: 22px; margin: 10px 0 4px; font-weight: 600; }
+.lock input { width: 100%; margin: 16px 0 10px; padding: 11px; font: 600 17px/1 ui-monospace, Consolas, monospace;
   letter-spacing: 1px; text-align: center; background: var(--field); color: var(--fg); border: 1px solid var(--border);
-  border-radius: 6px; text-transform: uppercase; }
+  border-radius: 10px; text-transform: uppercase; }
 .lock input:focus { outline: 2px solid var(--accent); border-color: transparent; }
 .lock .err { min-height: 1.3em; }
-.lock button { width: 100%; padding: 10px; }
+.lock button { width: 100%; padding: 11px; }
 </style>
 </head>
 <body>
@@ -125,18 +165,22 @@ label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
 
 <div id="app" class="hidden">
   <header>
-    <h1>Life Desk</h1>
+    <div class="titles"><div class="date" id="today"></div><h1 id="pageTitle">Home</h1></div>
     <div class="synced" id="synced"><span class="dot"></span><span id="syncedText"></span></div>
-    <button class="icon-btn" id="reload" title="Check for a newer copy" aria-label="Check for a newer copy">↻</button>
+    <button class="icon-btn" id="reload" title="Check for a newer copy" aria-label="Check for a newer copy">
+      <svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg></button>
   </header>
   <main>
-    <div class="bar">
-      <div class="seg"><button id="vTodo">To do</button><button id="vDone">Done</button></div>
-      <button class="primary" id="addBtn">+ Add</button>
-    </div>
     <div class="info muted hidden" id="pending"></div>
-    <div class="list" id="list"></div>
+    <div id="page"></div>
   </main>
+  <nav class="tabs" aria-label="Life Desk">
+    <button data-tab="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>Home</button>
+    <button data-tab="todo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>To do<span class="count hidden" id="todoCount"></span></button>
+    <button data-tab="notes"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h10l4 4v12H5z"/><path d="M9 12h6M9 16h4"/></svg>Notes</button>
+    <button data-tab="plans"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>Reminders</button>
+    <button data-tab="garden"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/></svg>Garden<span class="count hidden" id="gardenCount"></span></button>
+  </nav>
 </div>
 <div id="sheet" class="sheet-bg hidden"></div>
 <div id="toast" class="toast hidden"></div>
@@ -153,13 +197,17 @@ const WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MON_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
   "November", "December"];
+const TITLES = {home: "Home", todo: "To do", notes: "Notes", plans: "Reminders", garden: "Garden"};
+const LEAF = `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"/></svg>`;
 const CHECK_EVERY = 30000;  // while a change waits for the PC, look for a newer copy this often
 const $ = (id) => document.getElementById(id);
 const store = {  // localStorage can be unavailable; the page still works without it
   get(k) { try { return localStorage.getItem("lifedesk-" + k); } catch (e) { return null; } },
   set(k, v) { try { localStorage.setItem("lifedesk-" + k, v); } catch (e) {} },
 };
-let snap = null, key = null, keySalt = null, locked = null, queue = [], view = store.get("view") || "todo";
+let snap = null, key = null, keySalt = null, locked = null, queue = [];
+let tab = store.get("tab") || "home", view = store.get("view") || "todo", planView = store.get("planView") || "reminders";
+let noteSearch = "";
 let sendError = "", busy = false;
 
 // ---- dates (all local, as text YYYY-MM-DD like Life Desk)
@@ -188,8 +236,14 @@ function nextDate(item, d) {
   if (item.repeat === "year") return addMonths(d, 12, item.day);
   return d;
 }
+function inDays(d, today = todayDate()) {  // "Today", "Tomorrow", "In 5 days", "Mon 3 Dec", "Mar 2027"
+  const days = daysBetween(today, d);
+  if (days < 0) return "Overdue";
+  return days === 0 ? "Today" : days === 1 ? "Tomorrow" : days <= 31 ? `In ${days} days`
+    : days <= 300 ? niceDate(d, today) : `${MON[d.getMonth()]} ${d.getFullYear()}`;
+}
 
-// ---- an item's state, worked out here so the colours are right on any day (todo_core.state)
+// ---- a to-do's state, worked out here so the colours are right on any day (todo_core.state)
 function state(t, today = todayDate()) {
   if (t.removed) return "removed";
   if (t.done) return "done";
@@ -203,10 +257,7 @@ function badgeText(t, today = todayDate()) {
   const s = state(t, today);
   if (s === "overdue") return "Overdue";
   if (s === "today") return "Today";
-  if (s === "soon" || s === "later") {
-    const days = daysBetween(today, parseIso(t.due));
-    return days === 1 ? "Tomorrow" : days <= 31 ? `In ${days} days` : niceDate(parseIso(t.due), today);
-  }
+  if (s === "soon" || s === "later") return inDays(parseIso(t.due), today);
   return {nodate: "No date", done: "Done", removed: "Removed"}[s];
 }
 function detailsLine(t, today = todayDate()) {
@@ -220,6 +271,21 @@ function detailsLine(t, today = todayDate()) {
   if (t.due && w) bits.push(`warns ${Object.fromEntries(WARNINGS)[w] || w + " days before"}`);
   if (t.notes) bits.push(t.notes.split("\n")[0].slice(0, 80));
   return bits.join("  ·  ") || "no due date";
+}
+// reminders, renewals and garden jobs, as their tabs on the PC colour them
+function planState(dueIso, warn, extra = 30, today = todayDate()) {
+  const days = daysBetween(today, parseIso(dueIso));
+  return days < 0 ? "overdue" : days <= warn ? (days === 0 ? "today" : "due") : days <= extra ? "coming" : "later";
+}
+function taskState(nextIso, today = todayDate()) {  // garden_core.state
+  if (!nextIso) return "later";
+  const days = daysBetween(today, parseIso(nextIso));
+  return days < -7 ? "overdue" : days <= 0 ? "due" : days <= 7 ? "soon" : "later";
+}
+function taskWhen(nextIso, today = todayDate()) {
+  if (!nextIso) return "–";
+  const d = parseIso(nextIso), days = daysBetween(today, d);
+  return days <= 0 ? "Now" : inDays(d, today);
 }
 
 // ---- storage on the phone (IndexedDB "life-desk"): the unlocked key (not the code), the last locked copy, and
@@ -372,7 +438,7 @@ async function queueChange(op, item, extra = {}) {
 }
 const newTempId = () => "p" + tob64(crypto.getRandomValues(new Uint8Array(6))).replace(/[+/=]/g, "x");
 
-// ---- what to show: Life Desk's copy, with this phone's changes not yet in it laid on top
+// ---- the to-do list: Life Desk's copy, with this phone's changes not yet in it laid on top
 function current() {
   const applied = new Set(snap.applied || []);
   const items = snap.items.map((t) => ({...t}));
@@ -404,6 +470,14 @@ function current() {
   done.sort((a, b) => b.at.localeCompare(a.at));
   return {todo, done, find};
 }
+const needsYou = (t, today) => ["overdue", "today", "soon"].includes(state(t, today));
+function gardenDue() {
+  const out = [];
+  for (const p of (snap.garden?.plants || [])) for (const t of p.tasks) {
+    if (["due", "overdue"].includes(taskState(t.next))) out.push({p, t});
+  }
+  return out;
+}
 
 // ---- showing it
 function show(data) {
@@ -425,14 +499,28 @@ function show(data) {
   render();
 }
 
+function todoRow(t, today) {
+  return `<button class="row" data-id="${esc(t.id)}">
+    <div class="top"><span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
+      <span class="t">${esc(t.title)}${(t.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
+    <div class="sub">${esc(detailsLine(t, today))}</div>
+    ${t.waiting ? `<div class="wait">${t.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
+  </button>`;
+}
+
 function render() {
   if (!snap) return;
+  const today = todayDate();
   const age = (Date.now() - new Date(snap.made)) / 3600000;
   $("synced").classList.toggle("stale", age > 48);
   $("syncedText").textContent = age > 48 ? `PC last seen ${ago(snap.made)}` : `updated ${ago(snap.made)}`;
-  const {todo, done} = current();
-  $("vTodo").textContent = `To do (${todo.length})`;
-  $("vTodo").classList.toggle("on", view === "todo"); $("vDone").classList.toggle("on", view === "done");
+  $("today").textContent = `${WD_LONG[today.getDay()]} ${today.getDate()} ${MON_LONG[today.getMonth()]}`;
+  $("pageTitle").textContent = TITLES[tab];
+  document.querySelectorAll("nav.tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  const {todo} = current();
+  const waiting = todo.filter((t) => needsYou(t, today)).length, gdue = gardenDue().length;
+  $("todoCount").textContent = waiting; $("todoCount").classList.toggle("hidden", !waiting);
+  $("gardenCount").textContent = gdue; $("gardenCount").classList.toggle("hidden", !gdue);
   // changes waiting
   const unsent = queue.filter((c) => !c.sent).length, sent = queue.filter((c) => c.sent).length;
   const p = $("pending"); let text = "", warn = false;
@@ -448,33 +536,142 @@ function render() {
     text = `${sent} change${sent > 1 ? "s" : ""} waiting for Life Desk on your PC (it checks every minute while it's open).`;
   }
   p.textContent = text; p.classList.toggle("hidden", !text); p.classList.toggle("warn", warn);
-  const list = $("list"), today = todayDate();
-  if (view === "todo") {
-    list.innerHTML = todo.length ? todo.map((t) => `
-      <button class="row" data-id="${esc(t.id)}">
-        <div class="top"><span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
-          <span class="t">${esc(t.title)}${(t.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
-        <div class="sub">${esc(detailsLine(t, today))}</div>
-        ${t.waiting ? `<div class="wait">${t.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
-      </button>`).join("") : `<div class="note">Nothing to do. Press + Add to add something.</div>`;
-  } else {
-    list.innerHTML = done.length ? done.map((h) => `
-      <button class="row ticked" data-done="${esc(h.id)}">
-        <div class="top"><span class="badge s-done">Done</span><span class="t">${esc(h.title)}${(h.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
-        <div class="sub">${esc(niceDate(parseIso(h.at), today))}${h.note ? "  ·  " + esc(h.note) : ""}</div>
-        ${h.waiting ? `<div class="wait">${h.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
-      </button>`).join("") + `<div class="note">The last ${snap.done.length} things you ticked off. To put one back on the list, use Life Desk on your PC.</div>`
-      : `<div class="note">Nothing ticked off yet.</div>`;
-  }
+  ({home: renderHome, todo: renderTodo, notes: renderNotes, plans: renderPlans, garden: renderGarden}[tab] || renderHome)();
 }
 
-$("list").addEventListener("click", (e) => {
-  const row = e.target.closest(".row");
-  if (row && row.dataset.id) details(row.dataset.id);
+// ---- Home: what needs you, like the PC's Home tab
+function renderHome() {
+  const today = todayDate(), {todo} = current();
+  const waiting = todo.filter((t) => needsYou(t, today)), undated = todo.filter((t) => !t.due);
+  const coming = [...(snap.reminders || []).map((r) => ({kind: "r", name: r.label, date: r.due, st: planState(r.due, r.warn, 0)})),
+    ...(snap.renewals || []).map((r) => ({kind: "n", name: `${r.name} renews`, date: r.renews,
+      st: r.add_price ? "price" : planState(r.renews, r.warn, 0)}))]
+    .filter((x) => ["overdue", "today", "due", "price"].includes(x.st)).sort((a, b) => a.date.localeCompare(b.date));
+  const gdue = gardenDue(), pinned = (snap.notes || []).filter((n) => n.pinned).slice(0, 3);
+  const clear = (text) => `<div class="clear"><span class="tick"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:15px;height:15px"><path d="M5 12l5 5 9-10"/></svg></span>${esc(text)}</div>`;
+  let h = `<div class="card${waiting.length ? " alert" : ""}"><div class="caps">To do <a href="#" data-go="todo">Open ›</a></div>`;
+  if (waiting.length) {
+    const od = waiting.filter((t) => state(t, today) === "overdue").length, td = waiting.filter((t) => state(t, today) === "today").length;
+    h += `<div class="big">${waiting.length}<small>${[od ? od + " overdue" : "", td ? td + " today" : "", waiting.length - od - td ? (waiting.length - od - td) + " coming up" : ""].filter(Boolean).join(" · ")}</small></div>`;
+    h += waiting.slice(0, 6).map((t) => todoRow(t, today)).join("");
+  } else h += clear("Nothing due in the next few days.");
+  if (undated.length) h += `<div class="section">NO DATE</div>` + undated.slice(0, 5).map((t) => todoRow(t, today)).join("");
+  h += `</div>`;
+  h += `<div class="card${coming.length ? " alert" : ""}"><div class="caps">Reminders &amp; renewals <a href="#" data-go="plans">Open ›</a></div>`;
+  h += coming.length ? coming.map((x) => `<div class="row"><div class="top"><span class="badge s-${x.st}">${x.st === "price" ? "Add price" : esc(inDays(parseIso(x.date), today))}</span><span class="t">${esc(x.name)}</span></div></div>`).join("")
+    : clear("Nothing coming up.");
+  h += `</div>`;
+  if (snap.garden) {
+    h += `<div class="card${gdue.length ? " alert" : ""}"><div class="caps">Garden <a href="#" data-go="garden">Open ›</a></div>`;
+    h += gdue.length ? gdue.slice(0, 5).map(({p, t}) => `<div class="row"><div class="top"><span class="badge s-due">Now</span><span class="t">${esc(t.task)}: ${esc(p.name)}</span></div></div>`).join("")
+      : clear((snap.garden.plants || []).length ? "No plant care due." : "No plants yet - add them in Life Desk on your PC.");
+    h += `</div>`;
+  }
+  if (pinned.length) {
+    h += `<div class="card"><div class="caps">Pinned notes <a href="#" data-go="notes">Open ›</a></div>` +
+      pinned.map((n) => `<button class="row" data-note="${esc(n.id)}"><div class="t">${esc(n.title)}</div></button>`).join("") + `</div>`;
+  }
+  $("page").innerHTML = h;
+}
+
+// ---- To do: the full list, with Add, Done, Edit and Remove (sent to the PC)
+function renderTodo() {
+  const today = todayDate(), {todo, done} = current();
+  let h = `<div class="bar"><div class="seg"><button data-view="todo" class="${view === "todo" ? "on" : ""}">To do (${todo.length})</button><button data-view="done" class="${view === "done" ? "on" : ""}">Done</button></div><button class="primary" id="addBtn">+ Add</button></div><div class="list">`;
+  if (view === "todo") {
+    h += todo.length ? todo.map((t) => todoRow(t, today)).join("") : `<div class="note">Nothing to do. Press + Add to add something.</div>`;
+  } else {
+    h += done.length ? done.map((d) => `
+      <div class="row ticked">
+        <div class="top"><span class="badge s-done">Done</span><span class="t">${esc(d.title)}${(d.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
+        <div class="sub">${esc(niceDate(parseIso(d.at), today))}${d.note ? "  ·  " + esc(d.note) : ""}</div>
+        ${d.waiting ? `<div class="wait">${d.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
+      </div>`).join("") + `<div class="note">The last ${snap.done.length} things you ticked off. To put one back on the list, use Life Desk on your PC.</div>`
+      : `<div class="note">Nothing ticked off yet.</div>`;
+  }
+  $("page").innerHTML = h + `</div>`;
+}
+
+// ---- Notes: read-only here (pinned first, then the newest); written and changed in Life Desk on the PC
+function renderNotes() {
+  const notes = (snap.notes || []).filter((n) => !noteSearch || noteSearch.toLowerCase().split(/\s+/).every((w) => n.text.toLowerCase().includes(w)));
+  const row = (n) => `<button class="row" data-note="${esc(n.id)}"><div class="t">${esc(n.title)}</div>
+    <div class="sub">${esc(n.text.split("\n").filter((l) => l.trim()).slice(1).join(" · ").slice(0, 120) || "No more text")}</div></button>`;
+  const pinned = notes.filter((n) => n.pinned), rest = notes.filter((n) => !n.pinned);
+  let h = `<input class="search" id="noteSearch" placeholder="Search notes" value="${esc(noteSearch)}" autocomplete="off">`;
+  if (!notes.length) h += `<div class="note">${(snap.notes || []).length ? "No notes match." : "No notes yet. Notes are written in Life Desk on your PC."}</div>`;
+  if (pinned.length) h += `<div class="section">PINNED</div><div class="list">${pinned.map(row).join("")}</div>`;
+  if (rest.length) h += (pinned.length ? `<div class="section">NOTES</div>` : "") + `<div class="list">${rest.map(row).join("")}</div>`;
+  h += `<div class="readonly">Read-only on the phone for now: write and change notes in Life Desk on your PC.</div>`;
+  $("page").innerHTML = h;
+  const s = $("noteSearch");
+  s.oninput = () => { noteSearch = s.value; const pos = s.selectionStart; renderNotes(); const n = $("noteSearch"); n.focus(); n.setSelectionRange(pos, pos); };
+}
+
+// ---- Reminders and Renewals: read-only lists, soonest first
+function renderPlans() {
+  const today = todayDate();
+  let h = `<div class="bar"><div class="seg"><button data-plan="reminders" class="${planView === "reminders" ? "on" : ""}">Reminders (${(snap.reminders || []).length})</button><button data-plan="renewals" class="${planView === "renewals" ? "on" : ""}">Renewals (${(snap.renewals || []).length})</button></div></div><div class="list">`;
+  if (planView === "reminders") {
+    const rs = [...(snap.reminders || [])].sort((a, b) => a.due.localeCompare(b.due));
+    h += rs.length ? rs.map((r, i) => { const st = planState(r.due, r.warn); return `<button class="row" data-rem="${i}">
+      <div class="top"><span class="badge s-${st}">${esc(inDays(parseIso(r.due), today))}</span><span class="t">${esc(r.label)}${r.every !== "Just once" ? " ↻" : ""}</span>${r.on_list ? `<span class="badge s-list">on your list</span>` : ""}</div>
+      <div class="sub">due ${esc(niceDate(parseIso(r.due), today))} · ${esc(r.every.toLowerCase())}${r.last ? " · last done " + esc(niceDate(parseIso(r.last), today)) : ""}</div></button>`; }).join("")
+      : `<div class="note">No reminders. Add them in Life Desk on your PC.</div>`;
+  } else {
+    const ns = [...(snap.renewals || [])].sort((a, b) => a.renews.localeCompare(b.renews));
+    h += ns.length ? ns.map((r, i) => { const st = r.add_price ? "price" : planState(r.renews, r.warn, 90); return `<button class="row" data-ren="${i}">
+      <div class="top"><span class="badge s-${st}">${r.add_price ? "Add price" : esc(inDays(parseIso(r.renews), today))}</span><span class="t">${esc(r.name)}</span>${r.on_list ? `<span class="badge s-list">on your list</span>` : ""}</div>
+      <div class="sub">${esc(r.provider || "provider not known")} · renews ${esc(niceDate(parseIso(r.renews), today))} · ${esc(r.price)}${r.auto ? " · renews automatically" : ""}</div></button>`; }).join("")
+      : `<div class="note">No renewals.</div>`;
+  }
+  h += `</div><div class="readonly">Read-only on the phone. When one is close it goes onto your to-do list, where you can tick it off here.</div>`;
+  $("page").innerHTML = h;
+}
+
+// ---- Garden: your plants and what they need (read-only here), and the month's jobs
+function renderGarden() {
+  const g = snap.garden || {plants: [], jobs: []}, today = todayDate();
+  const thumb = (p) => p.thumb ? `<img class="thumb" src="data:image/png;base64,${p.thumb}" alt="">` : `<span class="thumb">${LEAF}</span>`;
+  const row = (p, i) => {
+    const t = p.tasks.find((x) => x.next);
+    return `<button class="row" data-plant="${i}"><div class="top" style="align-items:center">${thumb(p)}<div style="flex:1;min-width:0"><div class="t">${esc(p.name)}</div>
+      <div class="sub">${esc(p.where || (p.indoor ? "House plant" : "Garden"))}</div></div>
+      ${t ? `<span class="badge s-${taskState(t.next)}">${esc(t.task)} · ${esc(taskWhen(t.next, today))}</span>` : ""}</div></button>`;
+  };
+  const due = gardenDue();
+  let h = "";
+  if (due.length) h += `<div class="card alert"><div class="caps">Care due now</div>` + due.map(({p, t}) => `<div class="row"><div class="top"><span class="badge s-due">Now</span><span class="t">${esc(t.task)}: ${esc(p.name)}</span></div>${t.how ? `<div class="sub">${esc(t.how)}</div>` : ""}</div>`).join("") + `</div>`;
+  const ind = g.plants.map((p, i) => [p, i]).filter(([p]) => p.indoor), out = g.plants.map((p, i) => [p, i]).filter(([p]) => !p.indoor);
+  if (!g.plants.length) h += `<div class="note">No plants yet. Add them in Life Desk on your PC (Garden → Add a plant), with a photo.</div>`;
+  if (ind.length) h += `<div class="section">HOUSE PLANTS</div><div class="list">${ind.map(([p, i]) => row(p, i)).join("")}</div>`;
+  if (out.length) h += `<div class="section">GARDEN</div><div class="list">${out.map(([p, i]) => row(p, i)).join("")}</div>`;
+  if ((g.jobs || []).length) h += `<div class="card" style="margin-top:14px"><div class="caps">Garden jobs for ${esc(g.month)}</div>` +
+    g.jobs.map((j) => `<div class="row"><div class="top"><span class="badge s-${j.done ? "done" : "later"}">${j.done ? "Done" : "To do"}</span><span class="t" style="font-weight:400">${esc(j.job)}</span></div></div>`).join("") + `</div>`;
+  h += `<div class="readonly">Read-only on the phone for now: add plants and tick off care in Life Desk on your PC.</div>`;
+  $("page").innerHTML = h;
+}
+
+// ---- taps
+document.querySelector("nav.tabs").addEventListener("click", (e) => {
+  const b = e.target.closest("button[data-tab]");
+  if (!b) return;
+  tab = b.dataset.tab; store.set("tab", tab); window.scrollTo(0, 0); render();
 });
-$("vTodo").onclick = () => { view = "todo"; store.set("view", view); render(); };
-$("vDone").onclick = () => { view = "done"; store.set("view", view); render(); };
-$("addBtn").onclick = () => editor(null);
+$("page").addEventListener("click", (e) => {
+  const el = e.target.closest("[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],#addBtn");
+  if (!el) return;
+  e.preventDefault();
+  if (el.id === "addBtn") return editor(null);
+  if (el.dataset.go) { tab = el.dataset.go; store.set("tab", tab); window.scrollTo(0, 0); return render(); }
+  if (el.dataset.view) { view = el.dataset.view; store.set("view", view); return render(); }
+  if (el.dataset.plan) { planView = el.dataset.plan; store.set("planView", planView); return render(); }
+  if (el.dataset.id) return details(el.dataset.id);
+  if (el.dataset.note) return noteSheet(el.dataset.note);
+  if (el.dataset.rem) return reminderSheet(snap.reminders[[...snap.reminders].sort((a, b) => a.due.localeCompare(b.due)).length && 0] && [...snap.reminders].sort((a, b) => a.due.localeCompare(b.due))[Number(el.dataset.rem)]);
+  if (el.dataset.ren) return renewalSheet([...snap.renewals].sort((a, b) => a.renews.localeCompare(b.renews))[Number(el.dataset.ren)]);
+  if (el.dataset.plant) return plantSheet(snap.garden.plants[Number(el.dataset.plant)]);
+});
 $("reload").onclick = () => refresh();
 
 // ---- sheets
@@ -490,6 +687,45 @@ function toast(text, ms = 4000) {
   const t = $("toast"); t.textContent = text; t.classList.remove("hidden");
   clearTimeout(toast.timer); toast.timer = setTimeout(() => t.classList.add("hidden"), ms);
 }
+const closeBtn = `<div class="btns"><button id="sClose">Close</button></div>`;
+function withClose(el) { const b = el.querySelector("#sClose"); if (b) b.onclick = closeSheet; return el; }
+
+function noteSheet(id) {
+  const n = (snap.notes || []).find((x) => x.id === id);
+  if (!n) return;
+  withClose(openSheet(`<div class="muted" style="font-size:12px">Edited ${esc(niceDate(parseIso(n.edited)))}${n.pinned ? " · pinned" : ""}</div>
+    <div class="body" style="margin-top:8px;font-size:15px">${esc(n.text)}</div>${closeBtn}`));
+}
+function reminderSheet(r) {
+  if (!r) return;
+  const today = todayDate(), st = planState(r.due, r.warn);
+  withClose(openSheet(`<span class="badge s-${st}">${esc(inDays(parseIso(r.due), today))}</span><h2>${esc(r.label)}</h2>
+    <div class="muted">Due ${esc(longDate(parseIso(r.due)))} · ${esc(r.every.toLowerCase())}</div>
+    ${r.last ? `<div class="muted">Last done ${esc(niceDate(parseIso(r.last), today))}</div>` : ""}
+    ${r.on_list ? `<div class="row" style="margin-top:10px"><div class="sub">It's on your to-do list - tick it off there when it's done.</div></div>` : ""}
+    ${r.notes ? `<h3>Notes</h3><div class="body">${esc(r.notes)}</div>` : ""}${closeBtn}`));
+}
+function renewalSheet(r) {
+  if (!r) return;
+  const today = todayDate(), st = r.add_price ? "price" : planState(r.renews, r.warn, 90);
+  withClose(openSheet(`<span class="badge s-${st}">${r.add_price ? "Add price" : esc(inDays(parseIso(r.renews), today))}</span><h2>${esc(r.name)}</h2>
+    <div class="muted">${esc(r.provider || "Provider not known")} · renews ${esc(longDate(parseIso(r.renews)))} · ${esc(r.every.toLowerCase())}</div>
+    <div class="muted">Last price: ${esc(r.price)}${r.auto ? " · renews automatically" : ""}</div>
+    ${r.on_list ? `<div class="row" style="margin-top:10px"><div class="sub">Its reminder is on your to-do list. Tick it off there with who you went with and what you paid (e.g. Admiral £380).</div></div>` : ""}
+    ${r.notes ? `<h3>Notes</h3><div class="body">${esc(r.notes)}</div>` : ""}${closeBtn}`));
+}
+function plantSheet(p) {
+  if (!p) return;
+  const today = todayDate();
+  withClose(openSheet(`${p.thumb ? `<img class="photo" src="data:image/png;base64,${p.thumb}" alt="">` : ""}
+    <h2>${esc(p.name)}</h2>
+    <div class="muted">${p.latin ? `<i>${esc(p.latin)}</i> · ` : ""}${p.indoor ? "House plant" : "Garden plant"}${p.where ? " · " + esc(p.where) : ""}</div>
+    ${p.summary ? `<p style="margin:10px 0 0">${esc(p.summary)}</p>` : ""}
+    <h3>Care</h3>${p.tasks.length ? p.tasks.map((t) => `<div class="task"><div class="top"><span class="badge s-${taskState(t.next)}">${esc(taskWhen(t.next, today))}</span><span class="t">${esc(t.task)}</span></div>
+      <div class="sub">${esc(t.often)}${t.last ? " · last done " + esc(niceDate(parseIso(t.last), today)) : ""}</div>${t.how ? `<div class="sub" style="color:var(--fg)">${esc(t.how)}</div>` : ""}</div>`).join("")
+      : `<div class="muted">No care plan yet.</div>`}
+    ${p.notes ? `<h3>Notes</h3><div class="body">${esc(p.notes)}</div>` : ""}${closeBtn}`));
+}
 
 function details(id) {
   const {todo} = current();
@@ -501,7 +737,7 @@ function details(id) {
     <span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
     <h2>${esc(t.title)}${repeating ? " ↻" : ""}</h2>
     <div class="muted">${esc(detailsLine(t, today))}</div>
-    ${t.waiting ? `<div class="row"><div class="wait">${t.waiting === "sent" ? "Your change is waiting for Life Desk on your PC." : "Your change isn't sent yet."}</div></div>` : ""}
+    ${t.waiting ? `<div class="row" style="margin-top:10px"><div class="wait">${t.waiting === "sent" ? "Your change is waiting for Life Desk on your PC." : "Your change isn't sent yet."}</div></div>` : ""}
     ${t.notes ? `<h3>Notes</h3><div class="body">${esc(t.notes)}</div>` : ""}
     ${before.length ? `<h3>Done before</h3><div class="hist">${before.map((h) => `<div>${esc(niceDate(parseIso(h.at), today))}${h.note ? "  ·  " + esc(h.note) : ""}</div>`).join("")}</div>` : ""}
     ${repeating ? `<label class="f" for="note">Note when ticking off (optional)</label><input id="note" placeholder="e.g. Paid £205, or who did it" autocomplete="off">` : ""}
@@ -572,7 +808,7 @@ function editor(t) {
 document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") refresh(); });
 addEventListener("online", () => refresh());
 setInterval(() => { if (document.visibilityState === "visible" && snap && queue.length) refresh(); }, CHECK_EVERY);
-setInterval(() => { if (snap) render(); }, 60000);  // "updated n min ago", and Today / Overdue after midnight
+setInterval(() => { if (snap && !document.activeElement?.matches?.("input,textarea")) render(); }, 60000);  // "updated n min ago", and Today / Overdue after midnight
 
 document.documentElement.dataset.theme = store.get("theme") || "dark";
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
