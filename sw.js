@@ -1,7 +1,7 @@
 // Keeps the Life Desk phone page working offline: the page itself from the cache (refreshed in the background), and
 // the locked snapshot from the network when there's signal, otherwise the last copy downloaded. (The page also keeps
 // its own last copy, and any changes not yet sent, in IndexedDB.)
-const SHELL = "life-desk-shell-v5";  // change this whenever the page changes, so phones drop the old copy
+const SHELL = "life-desk-shell-v6";  // change this whenever the page changes, so phones drop the old copy
 const DATA = "life-desk-data";
 const FILES = ["./", "index.html", "manifest.webmanifest", "icon-192.png", "icon-512.png"];
 
