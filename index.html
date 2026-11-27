@@ -1189,7 +1189,9 @@ function foodSheet() {
     <div id="fGrid" class="numgrid hidden" style="margin-top:8px">${NUTRIENTS.map(([k, name, u]) => `<div><label for="n_${k}">${name} (${u})</label><input id="n_${k}" type="number" inputmode="decimal"></div>`).join("")}</div>
     <div class="err" id="fErr"></div>
     <div class="btns"><button class="primary" id="fSave">Add</button><button id="fCancel">Cancel</button></div>
-    ${recent.length ? `<h3>Had before - tap to add again</h3><div class="chips">${recent.map((r, i) => `<button data-r="${i}">${esc(r.text)}</button>`).join("")}</div>` : ""}`);
+    ${recent.length ? `<h3>Had before - tap to add again</h3>
+      <input id="fFind" type="search" autocomplete="off" placeholder="Search everything you've had">
+      <div class="chips" id="fAgain" style="margin-top:8px"></div><div class="read" id="fMore"></div>` : ""}`);
   el.querySelectorAll("#fMeals button").forEach((b) => b.onclick = () => { meal = b.dataset.m; el.querySelectorAll("#fMeals button").forEach((x) => x.classList.toggle("on", x === b)); });
   el.querySelector("#fNums").onclick = () => el.querySelector("#fGrid").classList.toggle("hidden");
   el.querySelector("#fCancel").onclick = closeSheet;
@@ -1198,10 +1200,19 @@ function foodSheet() {
     await queueChange("food_add", newTempId(), {fields: {date: day, meal, text, values, source}});
     toast(`Added ${text} to ${meal.toLowerCase()}.` + (values ? "" : " Your PC will estimate it."));
   };
-  el.querySelectorAll("[data-r]").forEach((b) => b.onclick = () => {
-    const r = recent[Number(b.dataset.r)];
-    send(r.text, Object.fromEntries(NUTRIENTS.map(([k]) => [k, r[k]])), r.source);
-  });
+  const find = el.querySelector("#fFind");
+  const showAgain = () => {  // the newest 12 that have every word typed in the search box
+    const typed = find.value.trim(), words = typed.toLowerCase().split(/\s+/).filter(Boolean);
+    const found = recent.map((r, i) => [r, i]).filter(([r]) => words.every((w) => r.text.toLowerCase().includes(w)));
+    el.querySelector("#fAgain").innerHTML = found.slice(0, 12).map(([r, i]) => `<button data-r="${i}">${esc(r.text)}</button>`).join("");
+    el.querySelector("#fMore").textContent = !found.length ? `Nothing you've had before matches "${typed}".`
+      : found.length > 12 ? `${found.length - 12} more - type to narrow it down.` : "";
+    el.querySelectorAll("#fAgain [data-r]").forEach((b) => b.onclick = () => {
+      const r = recent[Number(b.dataset.r)];
+      send(r.text, Object.fromEntries(NUTRIENTS.map(([k]) => [k, r[k]])), r.source);
+    });
+  };
+  if (find) { find.oninput = showAgain; showAgain(); }
   el.querySelector("#fSave").onclick = () => {
     const text = el.querySelector("#fText").value.trim();
     if (!text) { el.querySelector("#fErr").textContent = "Type what you had first."; return; }
