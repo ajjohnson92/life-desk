@@ -535,7 +535,7 @@ function todoRow(t, today) {
   return `<button class="row" data-id="${esc(t.id)}">
     <div class="top"><span class="badge s-${state(t, today)}">${esc(badgeText(t, today))}</span>
       <span class="t">${esc(t.title)}${(t.repeat || "none") !== "none" ? " ↻" : ""}</span></div>
-    <div class="sub">${esc(detailsLine(t, today))}</div>
+    <div class="sub">${asleep(t, today) ? `on your list from ${esc(niceDate(showsFrom(t), today))}  ·  ` : ""}${esc(detailsLine(t, today))}</div>
     ${t.waiting ? `<div class="wait">${t.waiting === "sent" ? "Waiting for your PC" : "Not sent yet"}</div>` : ""}
   </button>`;
 }
@@ -623,11 +623,18 @@ function renderHome() {
 }
 
 // ---- To do: the full list, with Add, Done, Edit and Remove (sent to the PC)
+// a repeating item stays off the list until its "Warn me" day (27 Nov 2026), as on the PC (todo_core.asleep)
+const asleep = (t, today = todayDate()) => (t.repeat || "none") !== "none" && state(t, today) === "later";
+const showsFrom = (t) => addDays(parseIso(t.due), -(t.warn ?? DEFAULT_WARN));
+let showAsleep = store.get("showAsleep") === "1";
 function renderTodo() {
-  const today = todayDate(), {todo, done} = current();
-  let h = `<div class="bar"><div class="seg"><button data-view="todo" class="${view === "todo" ? "on" : ""}">To do (${todo.length})</button><button data-view="done" class="${view === "done" ? "on" : ""}">Done</button></div><button class="primary" id="addBtn">+ Add</button></div><div class="list">`;
+  const today = todayDate(), {todo: all, done} = current();
+  const todo = all.filter((t) => showAsleep || !asleep(t, today)), sleeping = all.filter((t) => asleep(t, today));
+  let h = `<div class="bar"><div class="seg"><button data-view="todo" class="${view === "todo" ? "on" : ""}">To do (${all.length - sleeping.length})</button><button data-view="done" class="${view === "done" ? "on" : ""}">Done</button></div><button class="primary" id="addBtn">+ Add</button></div><div class="list">`;
   if (view === "todo") {
     h += todo.length ? todo.map((t) => todoRow(t, today)).join("") : `<div class="note">Nothing to do. Press + Add to add something.</div>`;
+    if (sleeping.length) h += `<button class="row" id="asleepBtn" style="background:transparent;text-align:center"><div class="sub">${showAsleep
+      ? "Hide repeating items until they're due" : `${sleeping.length} repeating item${sleeping.length > 1 ? "s" : ""} not due yet - they come onto the list on their Warn me day. Show them`}</div></button>`;
   } else {
     h += done.length ? done.map((d) => `
       <div class="row ticked">
@@ -975,10 +982,11 @@ document.querySelector("nav.tabs").addEventListener("click", (e) => {
   tab = b.dataset.tab; store.set("tab", tab); window.scrollTo(0, 0); render();
 });
 $("page").addEventListener("click", (e) => {
-  const el = e.target.closest("[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],[data-more],[data-sess],[data-food],[data-fday],#addBtn,#logBtn,#foodBtn");
+  const el = e.target.closest("#asleepBtn,[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],[data-more],[data-sess],[data-food],[data-fday],#addBtn,#logBtn,#foodBtn");
   if (!el) return;
   e.preventDefault();
   if (el.id === "addBtn") return editor(null);
+  if (el.id === "asleepBtn") { showAsleep = !showAsleep; store.set("showAsleep", showAsleep ? "1" : "0"); return render(); }
   if (el.id === "logBtn") return logSheet();
   if (el.id === "foodBtn") return foodSheet();
   if (el.dataset.go) {
@@ -1125,7 +1133,8 @@ function editor(t) {
     if (t) { await queueChange("edit", t.phone_id || t.id, {fields}); toast(`Saved changes to: ${title}.`); }
     else {
       await queueChange("add", newTempId(), {fields});
-      toast(`Added: ${title}` + (fields.due ? `, due ${niceDate(parseIso(fields.due))}.` : "."));
+      toast(`Added: ${title}` + (fields.due ? `, due ${niceDate(parseIso(fields.due))}.` : ".")
+        + (asleep(fields) ? ` As it repeats, it comes onto your list on ${niceDate(showsFrom(fields))}.` : ""));
     }
   };
   if (!t) setTimeout(() => el.querySelector("#eTitle").focus(), 50);
