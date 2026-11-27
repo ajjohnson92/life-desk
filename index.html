@@ -29,7 +29,7 @@
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 html, body { margin: 0; background: var(--bg); color: var(--fg); touch-action: pan-x pan-y; }  /* the page never zooms */
 body { font: 15px/1.4 "Segoe UI", system-ui, -apple-system, Roboto, sans-serif; min-height: 100vh;
-  padding: env(safe-area-inset-top) 0 calc(70px + env(safe-area-inset-bottom)); }
+  padding: env(safe-area-inset-top) 0 calc(16px + env(safe-area-inset-bottom)); }
 button, input, select, textarea { font: inherit; color: var(--fg); }
 button { background: var(--hover); border: 1px solid var(--border); border-radius: 9px; padding: 9px 14px; cursor: pointer; font-weight: 600; }
 button:active { background: var(--border); }
@@ -51,15 +51,44 @@ header h1 { font-size: 26px; margin: 0; font-weight: 600; letter-spacing: -.2px;
 .icon-btn { width: 38px; height: 38px; padding: 0; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 2px; }
 main { padding: 6px 16px 24px; }
 
-/* the bar along the bottom */
-nav.tabs { position: fixed; left: 0; right: 0; bottom: 0; z-index: 5; background: var(--bar); border-top: 1px solid var(--border);
-  display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); }
-nav.tabs button { background: none; border: 0; border-radius: 10px; padding: 6px 2px 4px; color: var(--muted);
-  display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 600; position: relative; }
-nav.tabs button.on { color: var(--fg); }
-nav.tabs button.on svg { color: var(--accent); }
-nav.tabs .count { position: absolute; top: 2px; left: calc(50% + 8px); background: var(--accent); color: var(--accent-fg);
-  font-size: 10px; border-radius: 8px; padding: 0 5px; line-height: 16px; }
+/* the pages, in a drawer behind the ☰ button (27 Nov 2026, as in Tutor Desk's phone view), grouped like the PC's sidebar */
+.menu-btn { position: relative; margin-right: 2px; }
+.menu-btn .dot2 { position: absolute; top: 6px; right: 5px; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.drawer-bg { position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 20; opacity: 0; pointer-events: none; transition: opacity .18s; }
+.drawer-bg.open { opacity: 1; pointer-events: auto; }
+.drawer { position: fixed; top: 0; bottom: 0; left: 0; width: min(280px, 82vw); background: var(--bar); z-index: 21;
+  border-right: 1px solid var(--border); transform: translateX(-102%); transition: transform .2s ease-out; overflow-y: auto;
+  padding: calc(14px + env(safe-area-inset-top)) 10px calc(14px + env(safe-area-inset-bottom)); }
+.drawer.open { transform: none; }
+.brand { display: flex; align-items: center; gap: 10px; padding: 4px 12px 6px; font-size: 18px; font-weight: 600; }
+.brand svg { width: 24px; height: 24px; color: var(--accent); }
+.group { font-size: 10px; letter-spacing: .2em; text-transform: uppercase; color: var(--dim); font-weight: 600; padding: 18px 12px 6px; }
+.nav { display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: none; border: none; border-radius: 9px;
+  padding: 10px 12px; color: #b8b8b8; font-weight: 400; position: relative; font-size: 15px; }
+.nav svg { width: 19px; height: 19px; flex: none; color: var(--muted); }
+.nav.on { background: var(--hover); color: var(--fg); font-weight: 600; }
+.nav.on::before { content: ""; position: absolute; left: 0; top: 7px; bottom: 7px; width: 3px; border-radius: 2px; background: var(--accent); }
+.nav.on svg { color: var(--accent); }
+.nav .count { margin-left: auto; background: var(--accent); color: var(--accent-fg); font-size: 11px; font-weight: 700; border-radius: 8px; padding: 0 6px; line-height: 18px; }
+.drawer .foot { font-size: 12px; color: var(--muted); padding: 18px 12px 0; }
+
+/* the calendar: a week as a list of days */
+.cal-nav { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.cal-nav .wk { flex: 1; text-align: center; font-weight: 600; }
+.cal-nav button { padding: 8px 13px; }
+.day { margin-bottom: 14px; }
+.day h3 { font-size: 13px; letter-spacing: .06em; color: var(--muted); margin: 0 2px 6px; text-transform: uppercase; font-weight: 600; }
+.day.today h3 { color: var(--accent); }
+.day .none { font-size: 13px; color: var(--dim); padding: 2px 2px 0; }
+.ev { display: flex; align-items: center; gap: 10px; width: 100%; text-align: left; background: var(--field); border: 1px solid var(--border);
+  border-left: 4px solid var(--border); border-radius: 10px; padding: 9px 11px; margin-bottom: 6px; font-weight: 400; }
+.ev .tm { font-size: 13px; color: var(--muted); width: 82px; flex: none; font-variant-numeric: tabular-nums; }
+.ev .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ev .nm small { display: block; color: var(--muted); font-size: 12px; }
+.ev.lesson { border-left-color: var(--accent); } .ev.lesson.done { border-left-color: #8a4b2c; } .ev.lesson.offer { border-left-color: var(--dim); border-left-style: dashed; }
+.ev.google { border-left-color: #8ec5ff; } .ev.todo { border-left-color: var(--b-sub-fg); } .ev.todo.due { border-left-color: var(--warn); } .ev.todo.overdue { border-left-color: var(--bad); }
+.key { display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 12px; color: var(--muted); margin: 4px 2px 12px; }
+.key i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
 
 .bar { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
 .seg { display: inline-flex; flex: 1; background: var(--field); border-radius: 11px; padding: 4px; gap: 2px; }
@@ -161,7 +190,7 @@ label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
 .search { width: 100%; background: var(--field); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; margin-bottom: 10px; }
 .search:focus { outline: 2px solid var(--accent); border-color: transparent; }
 
-.toast { position: fixed; left: 16px; right: 16px; bottom: calc(80px + env(safe-area-inset-bottom)); z-index: 20;
+.toast { position: fixed; left: 16px; right: 16px; bottom: calc(20px + env(safe-area-inset-bottom)); z-index: 20;
   background: var(--field); border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px; font-size: 14px;
   box-shadow: 0 4px 16px rgba(0,0,0,.4); }
 
@@ -192,6 +221,7 @@ label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
 
 <div id="app" class="hidden">
   <header>
+    <button class="icon-btn menu-btn" id="menu" aria-label="Pages"><svg class="i" viewBox="0 0 24 24" aria-hidden="true" style="width:23px;height:23px"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span class="dot2 hidden" id="menuDot"></span></button>
     <div class="titles"><div class="date" id="today"></div><h1 id="pageTitle">Home</h1></div>
     <div class="synced" id="synced"><span class="dot"></span><span id="syncedText"></span></div>
     <button class="icon-btn" id="reload" title="Check for a newer copy" aria-label="Check for a newer copy">
@@ -201,13 +231,10 @@ label.f { display: block; font-weight: 600; margin: 14px 0 5px; }
     <div class="info muted hidden" id="pending"></div>
     <div id="page"></div>
   </main>
-  <nav class="tabs" aria-label="Life Desk">
-    <button data-tab="home"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>Home</button>
-    <button data-tab="todo"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12l3 3 5-6"/></svg>To do<span class="count hidden" id="todoCount"></span></button>
-    <button data-tab="exercise"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"/></svg>Exercise</button>
-    <button data-tab="food"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 7c-4-3-8 0-7 5 1 6 4 9 7 8 3 1 6-2 7-8 1-5-3-8-7-5z"/><path d="M12 7c0-2 1-3 3-4"/></svg>Food</button>
-    <button data-tab="more"><svg class="i" viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="19" cy="12" r="1.3"/></svg>More<span class="count hidden" id="gardenCount"></span></button>
-  </nav>
+</div>
+<div id="drawerBg" class="drawer-bg"></div>
+<nav id="drawer" class="drawer" aria-label="Pages"></nav>
+<div>
 </div>
 <div id="sheet" class="sheet-bg hidden"></div>
 <div id="toast" class="toast hidden"></div>
@@ -224,7 +251,15 @@ const WD_LONG = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday
 const MON = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const MON_LONG = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October",
   "November", "December"];
-const TITLES = {home: "Home", todo: "To do", exercise: "Exercise", food: "Food", notes: "Notes", plans: "Reminders", garden: "Garden"};
+const PAGES = [  // the same groups as the sidebar in Life Desk on the PC
+  ["Today", [["home", "Home", "M3 11l9-7 9 7v9H3z"], ["todo", "To do", "M4 4h16v16H4zM8 12l3 3 5-6"],
+             ["calendar", "Calendar", "M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2zM3 10h18M8 3v4M16 3v4"]]],
+  ["Health", [["exercise", "Exercise", "M6 8v8M18 8v8M3 10v4M21 10v4M6 12h12"],
+              ["food", "Nutrition", "M12 7c-4-3-8 0-7 5 1 6 4 9 7 8 3 1 6-2 7-8 1-5-3-8-7-5zM12 7c0-2 1-3 3-4"]]],
+  ["Keep track", [["notes", "Notes", "M5 4h10l4 4v12H5zM9 12h6M9 16h4"], ["plans", "Reminders", "M6 16V11a6 6 0 0 1 12 0v5l2 2H4zM10 20a2 2 0 0 0 4 0"],
+                  ["garden", "Garden", "M12 21v-9M12 12c0-4 3-7 7-7 0 4-3 7-7 7zM12 15c0-3-2-5-6-5 0 3 2 5 6 5z"]]],
+];
+const TITLES = Object.fromEntries(PAGES.flatMap(([, items]) => items.map(([k, label]) => [k, label])));
 const HEALTH_OPS = ["workout_add", "workout_remove", "food_add", "food_remove"];  // 22 Nov 2026
 const MEALS = ["Breakfast", "Lunch", "Dinner", "Snack"];
 const NUTRIENTS = [["kcal", "Calories", "kcal"], ["protein", "Protein", "g"], ["carbs", "Carbs", "g"], ["sugar", "Sugar", "g"], ["fat", "Fat", "g"], ["fibre", "Fibre", "g"]];
@@ -238,7 +273,9 @@ const store = {  // localStorage can be unavailable; the page still works withou
 let snap = null, key = null, keySalt = null, locked = null, queue = [];
 let tab = store.get("tab") || "home", view = store.get("view") || "todo", planView = store.get("planView") || "reminders";
 let moreView = store.get("moreView") || "notes", foodDay = 0;  // foodDay: 0 today, -1 yesterday
-if (["notes", "plans", "garden"].includes(tab)) { moreView = tab; tab = "more"; }  // the tabs before 22 Nov 2026
+if (tab === "more") tab = moreView;  // the "More" button from before the menu (22-27 Nov 2026)
+if (!TITLES[tab]) tab = "home";
+let calWeek = 0;  // weeks from this one
 let noteSearch = "";
 let sendError = "", busy = false;
 
@@ -547,12 +584,13 @@ function render() {
   $("synced").classList.toggle("stale", age > 48);
   $("syncedText").textContent = age > 48 ? `PC last seen ${ago(snap.made)}` : `updated ${ago(snap.made)}`;
   $("today").textContent = `${WD_LONG[today.getDay()]} ${today.getDate()} ${MON_LONG[today.getMonth()]}`;
-  $("pageTitle").textContent = TITLES[tab === "more" ? moreView : tab];
-  document.querySelectorAll("nav.tabs button").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
+  $("pageTitle").textContent = TITLES[tab];
+  document.querySelectorAll("#drawer .nav").forEach((b) => b.classList.toggle("on", b.dataset.tab === tab));
   const {todo} = current();
   const waiting = todo.filter((t) => needsYou(t, today)).length, gdue = gardenDue().length;
   $("todoCount").textContent = waiting; $("todoCount").classList.toggle("hidden", !waiting);
   $("gardenCount").textContent = gdue; $("gardenCount").classList.toggle("hidden", !gdue);
+  $("menuDot").classList.toggle("hidden", !(waiting || gdue));
   // changes waiting
   const unsent = queue.filter((c) => !c.sent).length, sent = queue.filter((c) => c.sent).length;
   const p = $("pending"); let text = "", warn = false;
@@ -568,7 +606,8 @@ function render() {
     text = `${sent} change${sent > 1 ? "s" : ""} waiting for Life Desk on your PC (it checks every minute while it's open).`;
   }
   p.textContent = text; p.classList.toggle("hidden", !text); p.classList.toggle("warn", warn);
-  ({home: renderHome, todo: renderTodo, exercise: renderExercise, food: renderFood, more: renderMore}[tab] || renderHome)();
+  ({home: renderHome, todo: renderTodo, calendar: renderCalendar, exercise: renderExercise, food: renderFood, notes: renderNotes,
+    plans: renderPlans, garden: renderGarden}[tab] || renderHome)();
 }
 
 // ---- Home: what needs you, like the PC's Home tab
@@ -707,14 +746,69 @@ function renderGarden() {
   subEl().innerHTML = h;
 }
 
-// ---- More: Notes, Reminders and Garden, under one button
-function subEl() { return $("sub") || $("page"); }
-function renderMore() {
-  const gdue = gardenDue().length;
-  $("page").innerHTML = `<div class="bar"><div class="seg">${[["notes", "Notes"], ["plans", "Reminders"], ["garden", gdue ? `Garden (${gdue})` : "Garden"]]
-    .map(([k, l]) => `<button data-more="${k}" class="${moreView === k ? "on" : ""}">${l}</button>`).join("")}</div></div><div id="sub"></div>`;
-  ({notes: renderNotes, plans: renderPlans, garden: renderGarden}[moreView] || renderNotes)();
+// ---- Calendar (27 Nov 2026): a week as a list of days - your Tutor Desk lessons and Google Calendar (sent by the PC),
+// and your to-dos (worked out here, so ones you change on the phone show straight away). Read-only.
+let calEvents = {};
+function hhmm(m) { return `${String(Math.floor(m / 60) % 24).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`; }
+function toMins(t) { const [h, m] = t.split(":").map(Number); return h * 60 + m; }
+function weekEvents(mon) {
+  const sun = addDays(mon, 6), lo = iso(mon), hi = iso(sun), cal = snap.calendar || {lessons: [], google: []}, out = [];
+  for (const e of cal.lessons) if (e.date >= lo && e.date <= hi) {
+    const s = toMins(e.start);
+    out.push({date: e.date, sort: s, time: `${e.start}–${hhmm(s + e.minutes)}`, name: e.name, sub: `Lesson · ${e.kind}`,
+      cls: `lesson${e.kind === "Completed" ? " done" : e.kind.startsWith("Offered") ? " offer" : ""}`});
+  }
+  for (const e of cal.google) if (e.date >= lo && e.date <= hi) {
+    const s = e.all_day || !e.start ? -1 : toMins(e.start);
+    out.push({date: e.date, sort: s, time: s < 0 ? "All day" : `${e.start}–${hhmm(s + (e.minutes || 0))}`, name: e.title, sub: "Google Calendar", cls: "google"});
+  }
+  const today = todayDate();
+  for (const t of current().todo) {  // repeating ones on every date they come round
+    if (!t.due) continue;
+    let d = parseIso(t.due), first = true;
+    while (d <= sun) {
+      if (d >= mon) {
+        const st = first ? state(t, today) : "later";
+        out.push({date: iso(d), sort: -2, time: "To do", name: t.title + ((t.repeat || "none") !== "none" ? " ↻" : ""), id: t.id,
+          sub: st === "overdue" ? "Overdue" : st === "today" || st === "soon" ? "Due" : "On your list", cls: `todo${st === "overdue" ? " overdue" : st === "today" || st === "soon" ? " due" : ""}`});
+      }
+      if ((t.repeat || "none") === "none") break;
+      d = nextDate(t, d); first = false;
+    }
+  }
+  return out.sort((a, b) => a.date.localeCompare(b.date) || a.sort - b.sort);
 }
+function renderCalendar() {
+  const today = todayDate(), mon = addDays(monday(today), 7 * calWeek), sun = addDays(mon, 6), evs = weekEvents(mon);
+  const label = calWeek === 0 ? "This week" : calWeek === 1 ? "Next week" : calWeek === -1 ? "Last week" : "";
+  calEvents = {};
+  let h = `<div class="cal-nav"><button data-cw="-1" aria-label="Previous week">‹</button>
+    <div class="wk">${mon.getDate()} ${MON[mon.getMonth()]} – ${sun.getDate()} ${MON[sun.getMonth()]}${label ? `<div class="muted" style="font-size:12px;font-weight:400">${label}</div>` : ""}</div>
+    <button data-cw="1" aria-label="Next week">›</button>${calWeek ? `<button data-cw="0">Today</button>` : ""}</div>
+    <div class="key"><span><i style="background:var(--accent)"></i>Lessons</span><span><i style="background:#8ec5ff"></i>Google</span><span><i style="background:var(--b-sub-fg)"></i>To do</span></div>`;
+  for (let i = 0; i < 7; i++) {
+    const d = addDays(mon, i), ds = evs.filter((e) => e.date === iso(d)), isToday = iso(d) === iso(today);
+    h += `<div class="day${isToday ? " today" : ""}"><h3>${WD_LONG[d.getDay()]} ${d.getDate()} ${MON[d.getMonth()]}${isToday ? " · today" : ""}</h3>`;
+    h += ds.length ? ds.map((e) => { const k = `e${Object.keys(calEvents).length}`; calEvents[k] = e;
+      return `<button class="ev ${e.cls}" data-ev="${k}"><span class="tm">${esc(e.time)}</span><span class="nm">${esc(e.name)}<small>${esc(e.sub)}</small></span></button>`; }).join("")
+      : `<div class="none">Nothing on</div>`;
+    h += `</div>`;
+  }
+  const cal = snap.calendar;
+  h += `<div class="readonly">${cal ? `Lessons from Tutor Desk (read ${ago(cal.lessons_read)})${cal.google_read ? ` · Google Calendar read ${ago(cal.google_read)}` : ""} · 2 weeks back to 8 weeks ahead.`
+    : "Lessons and Google Calendar come from Life Desk on your PC - restart it there to send them."} Read-only here; to-dos can be changed in To do.</div>`;
+  $("page").innerHTML = h;
+}
+function eventSheet(k) {
+  const e = calEvents[k];
+  if (!e) return;
+  if (e.id) return details(e.id);  // a to-do: its own sheet, with Done / Edit / Remove
+  withClose(openSheet(`<span class="badge ${e.cls.startsWith("google") ? "s-soon" : "s-today"}">${esc(e.sub)}</span><h2>${esc(e.name)}</h2>
+    <div class="muted">${esc(longDate(parseIso(e.date)))} · ${esc(e.time)}</div>${closeBtn}`));
+}
+
+// Notes, Reminders and Garden draw into the page (they were under a "More" button from 22 to 27 Nov 2026)
+function subEl() { return $("sub") || $("page"); }
 
 // ---- Exercise (22 Nov 2026): this week against your target, and logging a session with its weights
 function kindClass(k) { return {Tennis: "k-tennis", CrossFit: "k-crossfit", Gym: "k-gym"}[k] || "k-other"; }
@@ -976,13 +1070,21 @@ function foodEntrySheet(id) {
 }
 
 // ---- taps
-document.querySelector("nav.tabs").addEventListener("click", (e) => {
-  const b = e.target.closest("button[data-tab]");
+$("drawer").innerHTML = `<div class="brand"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6l2 2 3-4M4 13l2 2 3-4M13 6h7M13 13h7M4 20h16"/></svg>Life Desk</div>` +
+  PAGES.map(([g, items]) => `<div class="group">${g}</div>` + items.map(([k, label, d]) =>
+    `<button class="nav" data-tab="${k}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg><span>${label}</span>${
+      k === "todo" ? `<span class="count hidden" id="todoCount"></span>` : k === "garden" ? `<span class="count hidden" id="gardenCount"></span>` : ""}</button>`).join("")).join("") +
+  `<div class="foot">Finances and Trips stay on the PC.</div>`;
+function drawer(open) { $("drawer").classList.toggle("open", open); $("drawerBg").classList.toggle("open", open); }
+$("menu").addEventListener("click", () => drawer(true));
+$("drawerBg").addEventListener("click", () => drawer(false));
+$("drawer").addEventListener("click", (e) => {
+  const b = e.target.closest(".nav");
   if (!b) return;
-  tab = b.dataset.tab; store.set("tab", tab); window.scrollTo(0, 0); render();
+  drawer(false); tab = b.dataset.tab; store.set("tab", tab); window.scrollTo(0, 0); render();
 });
 $("page").addEventListener("click", (e) => {
-  const el = e.target.closest("#asleepBtn,[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],[data-more],[data-sess],[data-food],[data-fday],#addBtn,#logBtn,#foodBtn");
+  const el = e.target.closest("#asleepBtn,[data-go],[data-id],[data-view],[data-plan],[data-note],[data-rem],[data-ren],[data-plant],[data-more],[data-sess],[data-food],[data-fday],#addBtn,#logBtn,#foodBtn,[data-cw],[data-ev]");
   if (!el) return;
   e.preventDefault();
   if (el.id === "addBtn") return editor(null);
@@ -991,10 +1093,11 @@ $("page").addEventListener("click", (e) => {
   if (el.id === "foodBtn") return foodSheet();
   if (el.dataset.go) {
     const go = el.dataset.go;
-    if (["notes", "plans", "garden"].includes(go)) { moreView = go; store.set("moreView", go); tab = "more"; } else tab = go;
-    store.set("tab", tab); window.scrollTo(0, 0); return render();
+    tab = go; store.set("tab", tab); window.scrollTo(0, 0); return render();
   }
   if (el.dataset.more) { moreView = el.dataset.more; store.set("moreView", moreView); window.scrollTo(0, 0); return render(); }
+  if (el.dataset.cw) { calWeek = el.dataset.cw === "0" ? 0 : calWeek + Number(el.dataset.cw); return render(); }
+  if (el.dataset.ev) return eventSheet(el.dataset.ev);
   if (el.dataset.fday) { foodDay = Number(el.dataset.fday); return render(); }
   if (el.dataset.sess) return sessionSheet(el.dataset.sess);
   if (el.dataset.food) return foodEntrySheet(el.dataset.food);
